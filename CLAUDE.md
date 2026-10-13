@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bachelor's thesis project: a web-based 3D space planning tool for interior designers, landscaping and horticulture companies, and individual users. Users register and log in, define an environment (floor or terrain size, floor material, simple walls), import 3D models (GLB only), position, rotate and scale them to real-world dimensions, save workspaces, and present designs through an interactive 3D view.
 
-**Status:** greenfield. The repository has no code yet. Update this file as the code below is scaffolded.
+**Status:** Sprint 0 (setup) implemented; see the roadmap in `plan.md` for current progress.
 
 ## Planning
 
@@ -25,7 +25,7 @@ Bachelor's thesis project: a web-based 3D space planning tool for interior desig
 
 Keep it simple. No photorealistic rendering, post-processing, animation, physics, dynamic or moving models, or high-detail effects. Prefer ready-made `@react-three/drei` helpers (`OrbitControls`, `TransformControls`, `useGLTF`, `Grid`) over custom 3D code.
 
-## Planned stack (TypeScript end to end)
+## Stack (TypeScript end to end)
 
 - **Web (`apps/web`):** React + Vite, Three.js through React Three Fiber + drei, Zustand (editor state), Tailwind CSS + shadcn/ui (components in `apps/web/src/components/ui`, added with `npx shadcn@latest add <name>`; use these instead of hand-rolled UI primitives), React Router, TanStack Query
 - **API (`apps/api`):** Node.js + Express, Prisma + SQLite (single file, `apps/api/prisma/dev.db`), JWT in an httpOnly cookie + bcrypt, Multer for model uploads
@@ -47,16 +47,28 @@ Keep it simple. No photorealistic rendering, post-processing, animation, physics
 
 ## Commands
 
-The commands below are the planned scripts. Check them against `package.json` once it exists.
+Run from the repo root (see `README.md` for setup and notes):
 
 ```
-npm install                       # install all workspaces
-npx prisma migrate dev            # run in apps/api; creates/updates the SQLite file
-npx prisma db seed                # run in apps/api; demo user, built-in models, example projects
-npm run dev                       # start web + api
-npm run lint / npm run typecheck
-npm run test                      # Vitest across workspaces
-npx vitest run path/to/file.test.ts -t "test name"   # single test
+npm install                 # all workspaces; postinstall runs `prisma generate`
+npm run db:migrate          # prisma migrate dev (apps/api); SQLite at apps/api/prisma/dev.db
+npm run db:seed             # prisma db seed (apps/api/prisma/seed.ts)
+npm run dev                 # API :3001 + web :5173 (open 5173; Vite proxies /api and /files)
+npm run build && npm start  # demo mode: API serves apps/web/dist on :3001
+npm run lint                # ESLint (flat config at root)
+npm run typecheck           # tsc in every workspace
+npm test                    # Vitest in every workspace
+npx vitest run src/config.test.ts -t "test name"   # single test, run inside the workspace folder
 ```
 
-Environment variables for the API: `DATABASE_URL` (for example `file:./dev.db`), `JWT_SECRET`, `UPLOAD_DIR`.
+Environment variables (`apps/api/.env`, template in `.env.example`): `PORT`, `DATABASE_URL` (`file:./prisma/dev.db`, relative to `apps/api`), `JWT_SECRET` (min 16 chars), `UPLOAD_DIR`. Validated with Zod in `apps/api/src/config.ts`.
+
+## Implementation notes (gotchas)
+
+- **Prisma 7.10.0, pinned.** npm's `latest` tag points to a Prisma 8 RC; do not upgrade blindly. Prisma 7 specifics: config lives in `apps/api/prisma.config.ts` (loads `.env` itself, seed command defined there); the schema has no datasource `url`; the client is generated to `apps/api/src/generated/prisma` (git-ignored) and imported from `./generated/prisma/client`; it needs the `@prisma/adapter-better-sqlite3` driver adapter (see `apps/api/src/db.ts`).
+- **API runtime:** TypeScript is run directly via the `tsx` loader (`node --import tsx`), with no compile step. Use `node --watch`, not `tsx watch`; the latter hangs on Windows under `concurrently`.
+- **`@app/shared`** is consumed as TypeScript source (`exports` points at `src/index.ts`), so no build step is needed for it.
+- **npm 11 install scripts** must be approved (`allowScripts` in the root `package.json`, versions pinned). Approving a new or upgraded native package: `npm install-scripts approve <pkg>`.
+- **shadcn/ui:** `radix-nova` style (Radix base, lucide icons); add components with `cd apps/web && npx shadcn@latest add <name>`. Generated files in `src/components/ui/` are excluded from the `react-refresh` lint rule.
+- **TypeScript 6 / ESLint 10 / Vitest 5 / Vite 8 / React 19 / React Router 8 / Tailwind 4 / Zod 4.** Check current APIs rather than assuming older ones.
+- **Static files:** `/files/uploads/*` → `apps/api/uploads/`; `/files/models/*` → `apps/api/assets/models/`. The DB stores paths relative to these.

@@ -1,0 +1,10 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Models are added sprint by sprint (User in Sprint 1, Project in Sprint 2, Model in Sprint 4).

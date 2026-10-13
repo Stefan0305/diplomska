@@ -5,13 +5,16 @@
 **Requirements covered:** NFR1, NFR2, NFR5. This completes **milestone M3**.
 
 ## Goal
+
 The app is stable, tested and ready to present: it starts from a clean setup with demo data, and a rehearsed walkthrough covers the key features.
 
 ## Scope
+
 - **In:** bug fixing, performance check, full manual test pass, usability test, seed data, documentation
 - **Out:** new features
 
 ## Tasks (high level)
+
 - **Testing:**
   - Full manual walkthrough: register, create a project, set up the environment, upload and place a model, resize it, save, reload and check, then open the share link
   - Make sure all unit tests pass
@@ -24,6 +27,7 @@ The app is stable, tested and ready to present: it starts from a clean setup wit
 - **Demo script:** a 5–10 minute walkthrough for the thesis defence
 
 ## Acceptance criteria
+
 - [ ] All unit tests pass
 - [ ] The manual checklist passes in all three browsers
 - [ ] A 50-object scene stays above 30 fps on the demo laptop
@@ -31,12 +35,15 @@ The app is stable, tested and ready to present: it starts from a clean setup wit
 - [ ] The demo walkthrough has been rehearsed end to end
 
 ## Tests
+
 All unit tests pass, plus the results of the manual and usability tests.
 
 ## Deliverables for the thesis
+
 - Testing chapter material: test results, usability findings and fps measurements
 - Final screenshots
 - List of known limitations and future work
 
 ## Notes / decisions
+
 _Filled in during the sprint._

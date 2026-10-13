@@ -5,13 +5,16 @@
 **Requirements covered:** FR1, NFR3
 
 ## Goal
+
 Users can register, log in and log out. Only logged-in users can see the app pages.
 
 ## Scope
+
 - **In:** User model, register/login/logout/"current user" endpoints, password hashing, JWT cookie, protected routes, login and register pages
 - **Out:** password reset, email verification, user roles, social login
 
 ## Tasks (high level)
+
 - **Shared:** Zod schemas for the register and login inputs
 - **API:**
   - `User` Prisma model and migration
@@ -26,6 +29,7 @@ Users can register, log in and log out. Only logged-in users can see the app pag
   - Logout button
 
 ## Acceptance criteria
+
 - [ ] A new user can register and is logged in automatically
 - [ ] A wrong password or unknown email shows an error message
 - [ ] After a page refresh, the user stays logged in
@@ -33,12 +37,15 @@ Users can register, log in and log out. Only logged-in users can see the app pag
 - [ ] Passwords are never stored or returned in plain text
 
 ## Tests
+
 - Unit tests: input validation and token helpers (sign/verify)
 - Manual check: register, login, `/api/auth/me` with and without the cookie, logout
 
 ## Deliverables for the thesis
+
 - Sequence diagram of the login flow
 - Short description of the security approach (bcrypt, httpOnly cookie)
 
 ## Notes / decisions
+
 _Filled in during the sprint._

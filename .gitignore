@@ -1,0 +1,29 @@
+node_modules/
+dist/
+coverage/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# local database
+*.db
+*.db-journal
+
+# user uploads (built-in models live in apps/api/assets/ and are committed)
+apps/api/uploads/
+
+# generated Prisma client
+apps/api/src/generated/
+
+# editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# TypeScript build cache
+*.tsbuildinfo

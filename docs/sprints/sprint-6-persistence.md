@@ -5,13 +5,16 @@
 **Requirements covered:** FR7. This completes the **MVP (milestone M2)**.
 
 ## Goal
+
 Workspaces are saved to the database and load exactly as they were left, so a design can be continued at any time.
 
 ## Scope
+
 - **In:** saving and loading the scene, validation, autosave, unsaved-changes indicator, project thumbnails
 - **Out:** version history, exporting or importing scene files
 
 ## Tasks (high level)
+
 - **Shared:** the complete scene Zod schema with a `version` field
 - **API:**
   - `GET /api/projects/:id/scene` and `PUT /api/projects/:id/scene`
@@ -26,20 +29,24 @@ Workspaces are saved to the database and load exactly as they were left, so a de
   - Handle models that were deleted since the scene was saved (show a placeholder or skip them)
 
 ## Acceptance criteria
+
 - [ ] After saving and reloading the page, the scene is identical (environment, objects, positions, rotations, sizes)
 - [ ] Autosave works and the save state indicator is accurate
 - [ ] Invalid scene data is rejected by the API
 - [ ] The dashboard shows a thumbnail for each saved project
 
 ## Tests
+
 - Unit tests: scene schema (valid and invalid examples)
 - Unit test: serialize/parse round trip of the scene (store, then JSON string, then store)
 - Manual check: save and reload; requests from non-owners are rejected
 
 ## Deliverables for the thesis
+
 - Description of the scene JSON format, with an example
 - Sequence diagram of saving a scene
 - MVP review: which requirements are complete
 
 ## Notes / decisions
+
 _Filled in during the sprint._

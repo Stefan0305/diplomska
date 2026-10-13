@@ -5,13 +5,16 @@
 **Requirements covered:** FR5, FR6, NFR4
 
 ## Goal
+
 Users select placed objects and move, rotate and resize them. Sizes are shown and entered in real-world metres, and scaling keeps the model's proportions.
 
 ## Scope
+
 - **In:** selection, move/rotate gizmo, snapping, properties panel, proportional scaling to a target size, delete and duplicate
 - **Out:** free (non-proportional) scaling, rotation around the X and Z axes, grouping objects, undo/redo (optional extra if time allows)
 
 ## Tasks (high level)
+
 - **Web:**
   - Click an object to select it (highlighted outline or bounding box); click empty space to deselect
   - `TransformControls` with move and rotate modes; keyboard shortcuts (for example G for move, R for rotate, Delete)
@@ -24,17 +27,21 @@ Users select placed objects and move, rotate and resize them. Sizes are shown an
 - **Shared:** a helper that calculates the scale factor from native size and target size
 
 ## Acceptance criteria
+
 - [ ] Objects can be selected, moved and rotated with the gizmo, and snapping works
 - [ ] The properties panel shows correct real-world dimensions in metres
 - [ ] Entering a target dimension (for example a 2.0 m wide sofa) resizes the model proportionally to exactly that size
 - [ ] Delete and duplicate work on the selected object
 
 ## Tests
+
 - Unit tests: scale-factor calculation (edge cases: zero or negative input, rounding), store actions for transforms
 
 ## Deliverables for the thesis
+
 - Explanation of the real-world scaling method, with a formula and an example
 - Screenshot of the editor with the properties panel
 
 ## Notes / decisions
+
 _Filled in during the sprint._

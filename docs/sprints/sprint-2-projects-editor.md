@@ -5,13 +5,16 @@
 **Requirements covered:** FR2, FR8 (basic camera)
 
 ## Goal
+
 A logged-in user manages their projects on a dashboard and opens a project in an editor that shows an empty 3D scene they can look around in.
 
 ## Scope
+
 - **In:** Project model, project CRUD, dashboard, editor page layout, 3D canvas with grid and orbit camera
 - **Out:** environment settings, models, saving the scene contents (later sprints)
 
 ## Tasks (high level)
+
 - **Shared:** Project schemas; an initial scene schema with a default empty scene
 - **API:**
   - `Project` Prisma model, owned by a user
@@ -24,19 +27,23 @@ A logged-in user manages their projects on a dashboard and opens a project in an
   - Zustand editor store skeleton
 
 ## Acceptance criteria
+
 - [ ] A user can create, rename, duplicate and delete projects
 - [ ] A user cannot open or change another user's project
 - [ ] Opening a project shows the 3D viewport with a grid
 - [ ] The camera can orbit, pan and zoom with the mouse
 
 ## Tests
+
 - Manual check: project CRUD and the ownership check
 - Unit tests: default scene creation, ownership check
 
 ## Deliverables for the thesis
+
 - ER diagram (User and Project)
 - Wireframes of the dashboard and editor
 - Screenshot of the empty editor
 
 ## Notes / decisions
+
 _Filled in during the sprint._
