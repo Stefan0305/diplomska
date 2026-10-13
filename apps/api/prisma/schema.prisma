@@ -7,4 +7,13 @@ datasource db {
   provider = "sqlite"
 }
 
-// Models are added sprint by sprint (User in Sprint 1, Project in Sprint 2, Model in Sprint 4).
+// Models are added sprint by sprint (Project in Sprint 2, Model in Sprint 4).
+
+model User {
+  id           String   @id @default(cuid())
+  /// Stored lowercased (normalized by the shared Zod schema).
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}

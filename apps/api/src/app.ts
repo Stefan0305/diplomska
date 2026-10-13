@@ -1,15 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import cookieParser from 'cookie-parser';
 import express, { type ErrorRequestHandler } from 'express';
 import type { HealthResponse } from '@app/shared';
+import { createAuthRouter } from './auth/routes';
 import type { Config } from './config';
+import { toErrorResponse } from './errors';
 import type { PrismaClient } from './generated/prisma/client';
 
 export function createApp(config: Config, prisma: PrismaClient) {
   const app = express();
   app.use(express.json({ limit: '5mb' }));
+  app.use(cookieParser());
 
   const api = express.Router();
+
+  api.use('/auth', createAuthRouter(prisma, config.jwtSecret));
 
   api.get('/health', async (_req, res) => {
     let database: HealthResponse['database'] = 'ok';
@@ -43,8 +49,9 @@ export function createApp(config: Config, prisma: PrismaClient) {
   }
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    const { status, body } = toErrorResponse(err);
+    if (status >= 500) console.error(err);
+    res.status(status).json(body);
   };
   app.use(errorHandler);
 

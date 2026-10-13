@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bachelor's thesis project: a web-based 3D space planning tool for interior designers, landscaping and horticulture companies, and individual users. Users register and log in, define an environment (floor or terrain size, floor material, simple walls), import 3D models (GLB only), position, rotate and scale them to real-world dimensions, save workspaces, and present designs through an interactive 3D view.
 
-**Status:** Sprint 0 (setup) implemented; see the roadmap in `plan.md` for current progress.
+**Status:** see the roadmap in `plan.md` for current progress.
 
 ## Planning
 
@@ -71,4 +71,7 @@ Environment variables (`apps/api/.env`, template in `.env.example`): `PORT`, `DA
 - **npm 11 install scripts** must be approved (`allowScripts` in the root `package.json`, versions pinned). Approving a new or upgraded native package: `npm install-scripts approve <pkg>`.
 - **shadcn/ui:** `radix-nova` style (Radix base, lucide icons); add components with `cd apps/web && npx shadcn@latest add <name>`. Generated files in `src/components/ui/` are excluded from the `react-refresh` lint rule.
 - **TypeScript 6 / ESLint 10 / Vitest 5 / Vite 8 / React 19 / React Router 8 / Tailwind 4 / Zod 4.** Check current APIs rather than assuming older ones.
+- **Prisma CLI in non-interactive shells:** `prisma migrate dev` waits on stdin when its output is piped (e.g. through PowerShell `Select-String`); run it with stdin closed (Bash: `< /dev/null`). `migrate dev` does not regenerate the client in Prisma 7; `npm run db:migrate` runs `prisma generate` afterwards.
+- **Auth:** `apps/api/src/auth/` (bcryptjs, jose JWT in the httpOnly `session` cookie). Protect routes with `requireAuth(config.jwtSecret)` and read the user with `currentUserId(req)`. Throw `HttpError(status, message, fields?)` for expected failures and validate bodies with `parseInput(schema, req.body)`; `errors.ts` maps everything to `{ error, fields? }`.
+- **Web data layer:** `apiGet`/`apiSend` in `apps/web/src/lib/api.ts` validate responses with shared schemas and throw `ApiError`. A global QueryClient handler treats any 401 as logged out. Wrap protected pages in the `RequireAuth` route (`features/auth/routes.tsx`). Forms use react-hook-form + `zodResolver(sharedSchema)` + `FormTextField`, with `applyServerErrors` mapping API field errors onto inputs.
 - **Static files:** `/files/uploads/*` → `apps/api/uploads/`; `/files/models/*` → `apps/api/assets/models/`. The DB stores paths relative to these.

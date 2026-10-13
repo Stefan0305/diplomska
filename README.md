@@ -58,7 +58,7 @@ Open <http://localhost:3001>. Only one process runs, which is the setup to use a
 | `npm run typecheck`  | TypeScript check in every workspace                           |
 | `npm test`           | Vitest unit tests in every workspace                          |
 | `npm run format`     | Format everything with Prettier                               |
-| `npm run db:migrate` | Apply Prisma schema changes to the SQLite database            |
+| `npm run db:migrate` | Apply Prisma schema changes to SQLite + regenerate the client |
 | `npm run db:seed`    | Load seed data (built-in models, demo user, example projects) |
 
 Run a single test file or test (from inside the workspace folder, e.g. `apps/api`):

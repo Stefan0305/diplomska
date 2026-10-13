@@ -74,7 +74,7 @@ The work is done in short, iterative sprints. A sprint ends when its acceptance 
 | Sprint                                             | Focus                   | Outcome                                                                                                    | Estimate | Status  |
 | -------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- | -------- | ------- |
 | [0](docs/sprints/sprint-0-setup.md)                | Setup                   | Monorepo, web and API skeletons, Prisma + SQLite, uploads folder, lint/typecheck/test scripts, seed script | 1 day    | Done    |
-| [1](docs/sprints/sprint-1-auth.md)                 | Authentication          | Register, login, logout, protected routes                                                                  | 1–2 days | Planned |
+| [1](docs/sprints/sprint-1-auth.md)                 | Authentication          | Register, login, logout, protected routes                                                                  | 1–2 days | Done    |
 | [2](docs/sprints/sprint-2-projects-editor.md)      | Projects + empty editor | Dashboard CRUD; editor with 3D canvas, grid and camera                                                     | 2 days   | Planned |
 | [3](docs/sprints/sprint-3-environment.md)          | Environment             | Floor size and material, walls, interior/exterior presets, lighting                                        | 2 days   | Planned |
 | [4](docs/sprints/sprint-4-models.md)               | Models                  | Upload, library panel, GLB loading, placing models on the floor                                            | 2–3 days | Planned |
