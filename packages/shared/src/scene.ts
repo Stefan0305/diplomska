@@ -18,13 +18,17 @@ export const floorMaterials = ['parquet', 'tiles', 'concrete', 'grass', 'soil', 
 
 export const ENVIRONMENT_SIZE_MIN = 1;
 export const ENVIRONMENT_SIZE_MAX = 200;
+export const WALL_HEIGHT_MIN = 0.1;
+export const WALL_HEIGHT_MAX = 20;
+export const WALL_THICKNESS_MIN = 0.01;
+export const WALL_THICKNESS_MAX = 2;
 
 export const wallSchema = z.object({
   id: z.string().min(1),
   start: point2,
   end: point2,
-  height: z.number().min(0.1).max(20),
-  thickness: z.number().min(0.01).max(2),
+  height: z.number().min(WALL_HEIGHT_MIN).max(WALL_HEIGHT_MAX),
+  thickness: z.number().min(WALL_THICKNESS_MIN).max(WALL_THICKNESS_MAX),
 });
 
 export const environmentSchema = z.object({
@@ -57,18 +61,3 @@ export type Wall = z.infer<typeof wallSchema>;
 export type Environment = z.infer<typeof environmentSchema>;
 export type SceneObject = z.infer<typeof sceneObjectSchema>;
 export type Scene = z.infer<typeof sceneSchema>;
-
-/** A new project's scene: an empty 6 × 5 m room. Walls arrive in Sprint 3. */
-export function createDefaultScene(): Scene {
-  return {
-    version: SCENE_VERSION,
-    environment: {
-      type: 'interior',
-      width: 6,
-      depth: 5,
-      floorMaterial: 'parquet',
-      walls: [],
-    },
-    objects: [],
-  };
-}

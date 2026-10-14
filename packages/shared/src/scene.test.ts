@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { createProjectInputSchema } from './project';
-import { createDefaultScene, SCENE_VERSION, sceneSchema } from './scene';
+import { createDefaultScene } from './environment';
+import { SCENE_VERSION, sceneSchema } from './scene';
 
 describe('createDefaultScene', () => {
-  it('produces a valid, empty scene', () => {
+  it('produces a valid scene: an empty 6 x 5 m room with four walls', () => {
     const scene = createDefaultScene();
     expect(sceneSchema.parse(scene)).toEqual(scene);
     expect(scene.version).toBe(SCENE_VERSION);
     expect(scene.objects).toEqual([]);
-    expect(scene.environment.walls).toEqual([]);
+    expect(scene.environment).toMatchObject({ type: 'interior', width: 6, depth: 5 });
+    expect(scene.environment.walls).toHaveLength(4);
   });
 
   it('returns a fresh object every time (no shared mutable state)', () => {

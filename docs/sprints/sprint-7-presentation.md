@@ -22,6 +22,7 @@ Designs can be presented to clients: a read-only viewer reached through a share 
   - "Share" dialog (shadcn/ui `Dialog`, `Switch`, copy `Button`) that shows and copies the link, and lets the user disable sharing
   - Viewer route `/view/:token` with orbit controls only: no editing UI and no gizmos
   - Camera presets: top, front and perspective, with "fit the whole scene in view"
+  - Vertical camera panning (requested in Sprint 3): right-drag up/down moves the view along Y again, with the orbit target and the camera clamped to y ≥ 0 so the camera never goes below the floor
   - Export the current view as a PNG, reusing the canvas capture helper from Sprint 6
   - UX polish: empty states, loading indicators, error messages, tooltips (shadcn/ui `Tooltip`), `Skeleton` loading states, and a short help dialog with the keyboard shortcuts
 - **Built-in models:** about 15–30 free GLB models (furniture, plants, trees, outdoor items) with licence notes, committed in `apps/api/assets/models/` and registered through the seed script

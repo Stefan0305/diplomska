@@ -1,6 +1,6 @@
 # Sprint 3: Environment
 
-**Status:** Planned
+**Status:** Done (2026-10-14)
 **Depends on:** Sprint 2
 **Requirements covered:** FR3, NFR4
 
@@ -27,10 +27,10 @@ The user sets up the space they are designing: indoor or outdoor, the floor size
 
 ## Acceptance criteria
 
-- [ ] Changing the width or depth updates the floor immediately and the size is shown in metres
-- [ ] The floor material can be switched between the presets
-- [ ] Walls can be added, edited and removed
-- [ ] Choosing the interior or exterior preset sets up a sensible starting space
+- [x] Changing the width or depth updates the floor immediately and the size is shown in metres
+- [x] The floor material can be switched between the presets
+- [x] Walls can be added, edited and removed
+- [x] Choosing the interior or exterior preset sets up a sensible starting space
 
 ## Tests
 
@@ -43,4 +43,16 @@ The user sets up the space they are designing: indoor or outdoor, the floor size
 
 ## Notes / decisions
 
-_Filled in during the sprint._
+- **Coordinate system:** the floor is centred on the origin. X is the width, Z the depth, Y points up, and 1 unit is 1 metre. A 6 m wide floor runs from x = −3 to x = 3.
+- **Pure environment logic lives in `packages/shared/src/environment.ts`** (presets, perimeter walls, resizing, wall geometry), so it is unit tested and also used by the API for new projects.
+- **New projects now start with four walls** (6 × 5 m interior, 2.7 m high, 15 cm thick). Projects created before this sprint keep their empty wall list; switching the environment type adds the preset walls.
+- **Resizing scales the walls with the floor:** every wall endpoint is multiplied by newSize / oldSize. Perimeter walls stay on the edges and inner walls keep their relative position; heights and thicknesses don't change.
+- **Switching interior/exterior applies a preset** (interior: four perimeter walls + parquet; exterior: no walls + grass) and keeps the floor size. When walls would be replaced, a confirmation dialog appears first.
+- **Walls are boxes** between their start and end points, centred on the line. The box is extended by the wall thickness so walls meeting at a corner overlap with no gap. Rotation: `rotationY = −atan2(dz, dx)` (three.js rotates counter-clockwise around +Y, and +Z points towards the viewer).
+- **Camera stays above the floor:** panning moves along the floor plane (`screenSpacePanning={false}`) instead of the screen plane, so the orbit target can't drop below the floor. Together with the polar-angle limit, the camera never goes underground. Height is changed by tilting and zooming; vertical panning with limits is planned for Sprint 7.
+- **Background experiments reverted:** a shared gray background and a gray ground plane were tried after feedback, then reverted at the user's request. The original per-type background (light gray indoors, blue sky outdoors) and the original grid colours stay.
+- **Corner flicker (z-fighting) fixed:** overlapping wall boxes share face planes at corners, and the selected (blue) wall flickered there. The selected wall's material uses `polygonOffset` so it always wins the depth test.
+- **Selecting walls:** click a wall in the 3D view or in the list. Clicking the floor or the sky deselects. The selected wall is highlighted blue.
+- **Flat colours instead of textures** for the floor materials, consistent with the "no realistic rendering" scope. The metre grid is drawn just above the floor, so scale stays visible on every material.
+- **Number inputs commit on Enter or blur** (Escape cancels) and accept a comma as the decimal separator, so typing "12" doesn't briefly resize the room to 1 m. Values are clamped to the schema limits by the store, so the scene is always valid.
+- **"Unsaved changes" badge:** edits mark the scene dirty, and saving arrives in Sprint 6. Until then, edits are lost on reload.

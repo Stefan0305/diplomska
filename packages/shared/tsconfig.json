@@ -1,4 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Shared code runs in both Node 24 and browsers; the DOM lib types the globals both
+    // provide (crypto.randomUUID, structuredClone). Don't use browser-only APIs here.
+    "lib": ["ES2023", "DOM"]
+  },
   "include": ["src"]
 }

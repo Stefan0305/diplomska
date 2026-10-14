@@ -10,11 +10,12 @@ import {
   toProjectSummary,
 } from './mappers';
 
+const storedScene = createDefaultScene();
 const project = {
   id: 'p1',
   ownerId: 'user-1',
   name: 'Living room',
-  scene: JSON.stringify(createDefaultScene()),
+  scene: JSON.stringify(storedScene),
   thumbnail: null,
   shareToken: null,
   createdAt: new Date('2026-10-13T10:00:00Z'),
@@ -78,7 +79,7 @@ describe('project mappers', () => {
   });
 
   it('includes the parsed scene in the detail', () => {
-    expect(toProjectDetail(project).scene).toEqual(createDefaultScene());
+    expect(toProjectDetail(project).scene).toEqual(storedScene);
   });
 });
 
