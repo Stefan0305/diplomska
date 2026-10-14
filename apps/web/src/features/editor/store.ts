@@ -27,13 +27,16 @@ export const DUPLICATE_OFFSET = 0.5;
 
 /**
  * Live editor state. React Three Fiber components render from it and editing actions write to
- * it; saving (Sprint 6) serializes `scene`. Every edit sets `isDirty`.
+ * it; saving serializes `scene`. Every edit sets `isDirty` and bumps `revision`, so a save can
+ * tell whether more edits happened while its request was in flight.
  */
 export interface EditorState {
   projectId: string | null;
   projectName: string;
   scene: Scene | null;
   isDirty: boolean;
+  /** Counts edits since the project was loaded. */
+  revision: number;
   selectedObjectId: string | null;
   selectedWallId: string | null;
   /** Gizmo settings: kept across projects, not saved. */
@@ -42,6 +45,8 @@ export interface EditorState {
 
   loadProject: (project: ProjectDetail) => void;
   reset: () => void;
+  /** A save of the scene at `revision` succeeded; clears `isDirty` unless newer edits exist. */
+  markSaved: (revision: number) => void;
   selectObject: (id: string | null) => void;
   selectWall: (id: string | null) => void;
   clearSelection: () => void;
@@ -64,6 +69,8 @@ export interface EditorState {
   removeObject: (id: string) => void;
   /** Copy an object next to the original and select the copy; returns its id. */
   duplicateObject: (id: string) => string | null;
+  /** Remove objects whose model no longer exists (deleted since saving); returns the count. */
+  removeMissingObjects: (existingModelIds: ReadonlySet<string>) => number;
 
   setTransformMode: (mode: TransformMode) => void;
   setSnapEnabled: (enabled: boolean) => void;
@@ -77,6 +84,7 @@ const initialState = {
   projectName: '',
   scene: null,
   isDirty: false,
+  revision: 0,
   selectedObjectId: null,
   selectedWallId: null,
 } satisfies Partial<EditorState>;
@@ -120,14 +128,22 @@ export const useEditorStore = create<EditorState>()((set, get) => {
   function editEnvironment(change: (env: Environment) => Environment) {
     const { scene } = get();
     if (!scene) return;
-    set({ scene: { ...scene, environment: change(scene.environment) }, isDirty: true });
+    set({
+      scene: { ...scene, environment: change(scene.environment) },
+      isDirty: true,
+      revision: get().revision + 1,
+    });
   }
 
   /** Apply a change to the object list (no-op before a project is loaded). */
   function editObjects(change: (objects: SceneObject[]) => SceneObject[]) {
     const { scene } = get();
     if (!scene) return;
-    set({ scene: { ...scene, objects: change(scene.objects) }, isDirty: true });
+    set({
+      scene: { ...scene, objects: change(scene.objects) },
+      isDirty: true,
+      revision: get().revision + 1,
+    });
   }
 
   return {
@@ -145,6 +161,10 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       }),
 
     reset: () => set(initialState),
+
+    markSaved: (revision) => {
+      if (get().revision === revision) set({ isDirty: false });
+    },
 
     selectObject: (id) => set({ selectedObjectId: id, selectedWallId: null }),
     selectWall: (id) => set({ selectedWallId: id, selectedObjectId: null }),
@@ -230,6 +250,17 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       editObjects((objects) => [...objects, copy]);
       set({ selectedObjectId: copy.id, selectedWallId: null });
       return copy.id;
+    },
+
+    removeMissingObjects: (existingModelIds) => {
+      const scene = get().scene;
+      if (!scene) return 0;
+      const missing = scene.objects.filter((o) => !existingModelIds.has(o.modelId));
+      if (missing.length === 0) return 0;
+      editObjects((objects) => objects.filter((o) => existingModelIds.has(o.modelId)));
+      const selected = get().selectedObjectId;
+      if (selected && missing.some((o) => o.id === selected)) set({ selectedObjectId: null });
+      return missing.length;
     },
 
     setTransformMode: (mode) => set({ transformMode: mode }),

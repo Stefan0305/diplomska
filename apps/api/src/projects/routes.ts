@@ -3,8 +3,10 @@ import {
   createProjectInputSchema,
   PROJECT_NAME_MAX_LENGTH,
   renameProjectInputSchema,
+  saveSceneInputSchema,
   type ProjectDetail,
   type ProjectSummary,
+  type Scene,
 } from '@app/shared';
 import { Router, type Request } from 'express';
 import { currentUserId, requireAuth } from '../auth/middleware';
@@ -13,12 +15,18 @@ import { parseInput } from '../http';
 import {
   assertOwnedProject,
   copyName,
+  parseStoredScene,
   serializeScene,
   toProjectDetail,
   toProjectSummary,
 } from './mappers';
+import { decodeThumbnail, removeThumbnail, writeThumbnail } from './thumbnails';
 
-export function createProjectsRouter(prisma: PrismaClient, jwtSecret: string): Router {
+export function createProjectsRouter(
+  prisma: PrismaClient,
+  jwtSecret: string,
+  uploadDir: string,
+): Router {
   const router = Router();
   router.use(requireAuth(jwtSecret));
 
@@ -66,6 +74,34 @@ export function createProjectsRouter(prisma: PrismaClient, jwtSecret: string): R
     res.json(body);
   });
 
+  router.get('/:id/scene', async (req, res) => {
+    const project = await findOwnedProject(req);
+    const body: { scene: Scene } = { scene: parseStoredScene(project.scene) };
+    res.json(body);
+  });
+
+  /** Save the workspace: the whole scene (validated by the shared schema) plus a thumbnail. */
+  router.put('/:id/scene', async (req, res) => {
+    const input = parseInput(saveSceneInputSchema, req.body);
+    const project = await findOwnedProject(req);
+    // Decode before writing anything, so an invalid image rejects the whole save.
+    const thumbnail = input.thumbnail ? decodeThumbnail(input.thumbnail) : null;
+    const thumbnailPath = thumbnail ? await writeThumbnail(uploadDir, thumbnail) : undefined;
+
+    try {
+      const updated = await prisma.project.update({
+        where: { id: project.id },
+        data: { scene: serializeScene(input.scene), thumbnail: thumbnailPath },
+      });
+      if (thumbnailPath) await removeThumbnail(uploadDir, project.thumbnail);
+      const body: { project: ProjectSummary } = { project: toProjectSummary(updated) };
+      res.json(body);
+    } catch (err) {
+      if (thumbnailPath) await removeThumbnail(uploadDir, thumbnailPath);
+      throw err;
+    }
+  });
+
   router.post('/:id/duplicate', async (req, res) => {
     const project = await findOwnedProject(req);
     // Copies the scene only: the thumbnail file and share link belong to the original.
@@ -83,6 +119,7 @@ export function createProjectsRouter(prisma: PrismaClient, jwtSecret: string): R
   router.delete('/:id', async (req, res) => {
     const project = await findOwnedProject(req);
     await prisma.project.delete({ where: { id: project.id } });
+    await removeThumbnail(uploadDir, project.thumbnail);
     res.status(204).end();
   });
 

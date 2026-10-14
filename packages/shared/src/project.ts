@@ -35,3 +35,22 @@ export type CreateProjectInput = z.infer<typeof createProjectInputSchema>;
 export type RenameProjectInput = z.infer<typeof renameProjectInputSchema>;
 export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 export type ProjectDetail = z.infer<typeof projectDetailSchema>;
+
+/** Thumbnails are small previews (about 480 × 300 px), so 1 MB of base64 is plenty. */
+export const THUMBNAIL_MAX_LENGTH = 1_000_000;
+
+/** A JPEG or PNG image as a base64 data URL, as produced by `canvas.toDataURL()`. */
+export const thumbnailDataUrlSchema = z
+  .string()
+  .max(THUMBNAIL_MAX_LENGTH, 'Thumbnail is too large')
+  .regex(/^data:image\/(jpeg|png);base64,[A-Za-z0-9+/]+={0,2}$/, 'Thumbnail must be a JPEG or PNG');
+
+/** Body of PUT /api/projects/:id/scene. The thumbnail is optional (e.g. saving on page exit). */
+export const saveSceneInputSchema = z.object({
+  scene: sceneSchema,
+  thumbnail: thumbnailDataUrlSchema.optional(),
+});
+
+export const sceneResponseSchema = z.object({ scene: sceneSchema });
+
+export type SaveSceneInput = z.infer<typeof saveSceneInputSchema>;

@@ -19,11 +19,20 @@ export function useProjects() {
   return useQuery({ queryKey: projectKeys.list(), queryFn: fetchProjects });
 }
 
+/**
+ * The project opened in the editor. It is fetched fresh on every visit and never refetched in
+ * the background: the editor store owns the scene from then on, and a refetch would overwrite
+ * unsaved edits.
+ */
 export function useProject(id: string) {
   return useQuery({
     queryKey: projectKeys.detail(id),
     queryFn: () => fetchProject(id),
     retry: false,
+    gcTime: 0,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

@@ -6,6 +6,7 @@ import {
   type ProjectDetail,
   type ProjectSummary,
   type RenameProjectInput,
+  type SaveSceneInput,
 } from '@app/shared';
 import { apiGet, apiSend, apiSendNoContent } from '@/lib/api';
 
@@ -43,4 +44,11 @@ export async function duplicateProject(id: string): Promise<ProjectSummary> {
 
 export function deleteProject(id: string): Promise<void> {
   return apiSendNoContent('DELETE', `/projects/${encodeURIComponent(id)}`);
+}
+
+/** Save the editor's scene (and optionally a new thumbnail); returns the updated summary. */
+export async function saveScene(id: string, input: SaveSceneInput): Promise<ProjectSummary> {
+  return (
+    await apiSend('PUT', `/projects/${encodeURIComponent(id)}/scene`, input, projectResponseSchema)
+  ).project;
 }

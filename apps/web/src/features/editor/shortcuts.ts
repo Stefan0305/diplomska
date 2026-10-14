@@ -1,5 +1,6 @@
 /** Editor keyboard shortcuts as pure data, so the mapping is unit tested. */
-export type EditorCommand = 'move' | 'rotate' | 'toggleSnap' | 'delete' | 'duplicate' | 'deselect';
+export type EditorCommand =
+  'move' | 'rotate' | 'toggleSnap' | 'delete' | 'duplicate' | 'deselect' | 'save';
 
 export interface KeyInput {
   key: string;
@@ -12,7 +13,12 @@ export interface KeyInput {
 export function commandForKey({ key, ctrlKey, metaKey, altKey }: KeyInput): EditorCommand | null {
   const modifier = ctrlKey || metaKey;
   if (altKey) return null;
-  if (modifier) return key.toLowerCase() === 'd' ? 'duplicate' : null;
+  if (modifier) {
+    const letter = key.toLowerCase();
+    if (letter === 'd') return 'duplicate';
+    if (letter === 's') return 'save';
+    return null;
+  }
   switch (key.toLowerCase()) {
     case 'g':
       return 'move';

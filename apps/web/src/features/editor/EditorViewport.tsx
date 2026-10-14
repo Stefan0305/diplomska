@@ -1,6 +1,7 @@
 import { GizmoHelper, GizmoViewport, Grid, OrbitControls } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { useModelMap } from '@/features/models/hooks';
+import { CAPTURE_GRID, CaptureBridge } from './capture';
 import { environmentLooks } from './materials';
 import { Floor } from './scene/Floor';
 import { isGizmoClick } from './scene/gizmoGuard';
@@ -61,6 +62,7 @@ export function EditorViewport() {
 
       {/* Metre grid drawn just above the floor so it stays visible on every material. */}
       <Grid
+        userData={{ [CAPTURE_GRID]: true }}
         position={[0, 0.002, 0]}
         infiniteGrid
         cellSize={0.5}
@@ -83,6 +85,8 @@ export function EditorViewport() {
         minDistance={1}
         maxDistance={250}
       />
+
+      <CaptureBridge />
 
       <GizmoHelper alignment="bottom-right" margin={[64, 64]}>
         <GizmoViewport labelColor="white" axisHeadScale={0.9} />

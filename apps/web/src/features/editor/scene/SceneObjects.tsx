@@ -11,6 +11,7 @@ import {
   type RefObject,
 } from 'react';
 import { Box3, BoxGeometry, EdgesGeometry, Euler, type Group, type Object3D } from 'three';
+import { CAPTURE_HIDDEN } from '../capture';
 import { SELECTED_COLOR } from '../materials';
 import { useModelGltf } from '../models/gltf';
 import { normalizeBounds, type Vec3 } from '../models/normalize';
@@ -86,7 +87,12 @@ function SelectionBox({ size }: { size: Vec3 }) {
   }, [w, h, d]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return (
-    <lineSegments geometry={geometry} position={[0, h / 2, 0]} raycast={() => null}>
+    <lineSegments
+      geometry={geometry}
+      position={[0, h / 2, 0]}
+      raycast={() => null}
+      userData={{ [CAPTURE_HIDDEN]: true }}
+    >
       <lineBasicMaterial color={SELECTED_COLOR} />
     </lineSegments>
   );

@@ -24,6 +24,11 @@ describe('commandForKey', () => {
     expect(commandForKey(key('Escape'))).toBe('deselect');
   });
 
+  it('maps Ctrl+S and Cmd+S to save (not to the snap toggle)', () => {
+    expect(commandForKey(key('s', { ctrlKey: true }))).toBe('save');
+    expect(commandForKey(key('S', { metaKey: true }))).toBe('save');
+  });
+
   it('maps Ctrl+D and Cmd+D to duplicate', () => {
     expect(commandForKey(key('d', { ctrlKey: true }))).toBe('duplicate');
     expect(commandForKey(key('D', { metaKey: true }))).toBe('duplicate');
@@ -31,7 +36,6 @@ describe('commandForKey', () => {
 
   it('leaves other browser shortcuts alone', () => {
     expect(commandForKey(key('r', { ctrlKey: true }))).toBeNull(); // reload
-    expect(commandForKey(key('s', { ctrlKey: true }))).toBeNull(); // save (Sprint 6)
     expect(commandForKey(key('g', { altKey: true }))).toBeNull();
     expect(commandForKey(key('d'))).toBeNull();
     expect(commandForKey(key('x'))).toBeNull();

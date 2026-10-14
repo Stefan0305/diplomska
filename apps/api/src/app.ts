@@ -18,7 +18,7 @@ export function createApp(config: Config, prisma: PrismaClient) {
   const api = express.Router();
 
   api.use('/auth', createAuthRouter(prisma, config.jwtSecret));
-  api.use('/projects', createProjectsRouter(prisma, config.jwtSecret));
+  api.use('/projects', createProjectsRouter(prisma, config.jwtSecret, config.uploadDir));
   api.use('/models', createModelsRouter(prisma, config.jwtSecret, config.uploadDir));
 
   api.get('/health', async (_req, res) => {

@@ -1,17 +1,19 @@
-import { ArrowLeft, CircleDot } from 'lucide-react';
-import { useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link, useParams } from 'react-router';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { EditorViewport } from '@/features/editor/EditorViewport';
+import { MissingModelsAlert } from '@/features/editor/MissingModelsAlert';
 import { EnvironmentPanel } from '@/features/editor/panels/EnvironmentPanel';
 import { ObjectPanel } from '@/features/editor/panels/ObjectPanel';
+import { SaveIndicator } from '@/features/editor/SaveIndicator';
 import { useEditorStore } from '@/features/editor/store';
 import { TransformToolbar } from '@/features/editor/TransformToolbar';
 import { useEditorShortcuts } from '@/features/editor/useEditorShortcuts';
+import { useSceneSaver } from '@/features/editor/useSceneSaver';
 import { useModelMap } from '@/features/models/hooks';
 import { ModelLibraryPanel } from '@/features/models/ModelLibraryPanel';
 import { useProject } from '@/features/projects/hooks';
@@ -23,18 +25,40 @@ export function EditorPage() {
   const loadProject = useEditorStore((s) => s.loadProject);
   const reset = useEditorStore((s) => s.reset);
   const projectName = useEditorStore((s) => s.projectName);
-  const isDirty = useEditorStore((s) => s.isDirty);
+  const objects = useEditorStore((s) => s.scene?.objects);
+  const removeMissingObjects = useEditorStore((s) => s.removeMissingObjects);
   const selectedObject = useEditorStore((s) =>
     s.selectedObjectId ? s.scene?.objects.find((o) => o.id === s.selectedObjectId) : undefined,
   );
   const models = useModelMap();
-  useEditorShortcuts();
+  const { save, saveOnExit, status } = useSceneSaver();
+  useEditorShortcuts({ onSave: () => void save({ manual: true }) });
 
-  // Load the fetched project into the editor store; clear it when leaving the editor.
+  // Load the fetched project into the editor store once; from then on the store owns the scene.
   useEffect(() => {
-    if (project.data) loadProject(project.data);
+    if (project.data && useEditorStore.getState().projectId !== project.data.id) {
+      loadProject(project.data);
+    }
   }, [project.data, loadProject]);
-  useEffect(() => reset, [reset]);
+  // Leaving the editor: save pending edits first (this reads the store), then clear it. The ref
+  // keeps this cleanup tied to unmounting only, never to a changed callback.
+  const saveOnExitRef = useRef(saveOnExit);
+  useEffect(() => {
+    saveOnExitRef.current = saveOnExit;
+  });
+  useEffect(
+    () => () => {
+      saveOnExitRef.current();
+      reset();
+    },
+    [reset],
+  );
+
+  // Objects whose model was deleted since the scene was saved.
+  const missingCount = useMemo(
+    () => (models && objects ? objects.filter((o) => !models.has(o.modelId)).length : 0),
+    [models, objects],
+  );
 
   if (project.isPending) {
     return (
@@ -71,13 +95,7 @@ export function EditorPage() {
         </Button>
         <Separator orientation="vertical" className="h-5" />
         <h1 className="truncate text-sm font-medium">{projectName || project.data.name}</h1>
-        {isDirty && (
-          // Saving arrives in Sprint 6; until then edits live only in this browser tab.
-          <Badge variant="outline" className="ml-auto gap-1 text-muted-foreground">
-            <CircleDot className="text-amber-500" />
-            Unsaved changes (saving comes in Sprint 6)
-          </Badge>
-        )}
+        <SaveIndicator status={status} onSave={() => void save({ manual: true })} />
       </div>
 
       <div className="flex min-h-0 flex-1">
@@ -87,6 +105,14 @@ export function EditorPage() {
         <div className="relative min-w-0 flex-1">
           <EditorViewport />
           <TransformToolbar />
+          {missingCount > 0 && models && (
+            <div className="pointer-events-none absolute bottom-3 left-3">
+              <MissingModelsAlert
+                count={missingCount}
+                onRemove={() => removeMissingObjects(new Set(models.keys()))}
+              />
+            </div>
+          )}
         </div>
         <aside className="hidden w-72 shrink-0 overflow-y-auto border-l bg-background lg:block">
           {/* The selected object's properties replace the environment settings while selected. */}

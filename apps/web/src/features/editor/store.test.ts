@@ -289,3 +289,42 @@ describe('editor store: transforms', () => {
     expect(sceneSchema.safeParse(store().scene).success).toBe(true);
   });
 });
+
+describe('editor store: saving', () => {
+  beforeEach(() => {
+    store().reset();
+    store().loadProject(makeProject());
+  });
+
+  it('bumps the revision on every edit, starting from 0 after loading', () => {
+    expect(store().revision).toBe(0);
+    store().setFloorSize(8, 8);
+    const id = store().addObject('m1');
+    store().updateObject(id ?? '', { scale: 2 });
+    expect(store().revision).toBe(3);
+  });
+
+  it('clears isDirty when the saved revision is still the latest', () => {
+    store().setFloorSize(8, 8);
+    store().markSaved(store().revision);
+    expect(store().isDirty).toBe(false);
+  });
+
+  it('stays dirty when edits happened while the save was in flight', () => {
+    store().setFloorSize(8, 8);
+    const saving = store().revision;
+    store().setFloorMaterial('tiles');
+    store().markSaved(saving);
+    expect(store().isDirty).toBe(true);
+  });
+
+  it('removes objects whose model was deleted and clears their selection', () => {
+    store().addObject('kept');
+    const gone = store().addObject('deleted') ?? '';
+    expect(store().selectedObjectId).toBe(gone);
+    expect(store().removeMissingObjects(new Set(['kept']))).toBe(1);
+    expect(store().scene?.objects.map((o) => o.modelId)).toEqual(['kept']);
+    expect(store().selectedObjectId).toBeNull();
+    expect(store().removeMissingObjects(new Set(['kept']))).toBe(0);
+  });
+});
