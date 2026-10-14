@@ -71,17 +71,17 @@ Bachelor's thesis project. This is the main plan file. Details for each sprint l
 
 The work is done in short, iterative sprints. A sprint ends when its acceptance criteria are met, not on a fixed date. Each sprint has its own file with its goal, tasks and acceptance criteria. The estimates assume focused work with AI assistance, about **3–4 weeks in total**; the MVP is ready after about 2–2.5 weeks.
 
-| Sprint                                             | Focus                   | Outcome                                                                                                    | Estimate | Status  |
-| -------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| [0](docs/sprints/sprint-0-setup.md)                | Setup                   | Monorepo, web and API skeletons, Prisma + SQLite, uploads folder, lint/typecheck/test scripts, seed script | 1 day    | Done    |
-| [1](docs/sprints/sprint-1-auth.md)                 | Authentication          | Register, login, logout, protected routes                                                                  | 1–2 days | Done    |
-| [2](docs/sprints/sprint-2-projects-editor.md)      | Projects + empty editor | Dashboard CRUD; editor with 3D canvas, grid and camera                                                     | 2 days   | Done    |
-| [3](docs/sprints/sprint-3-environment.md)          | Environment             | Floor size and material, walls, interior/exterior presets, lighting                                        | 2 days   | Done    |
-| [4](docs/sprints/sprint-4-models.md)               | Models                  | Upload, library panel, GLB loading, placing models on the floor                                            | 2–3 days | Done    |
-| [5](docs/sprints/sprint-5-transform-dimensions.md) | Transform + dimensions  | Move/rotate/scale gizmo, snapping, real-world sizing in metres                                             | 2–3 days | Planned |
-| [6](docs/sprints/sprint-6-persistence.md)          | Persistence             | Save/load workspaces, autosave, thumbnails (**MVP complete**)                                              | 2 days   | Planned |
-| [7](docs/sprints/sprint-7-presentation.md)         | Presentation + polish   | Share link viewer, PNG export, camera presets, built-in models                                             | 2–3 days | Planned |
-| [8](docs/sprints/sprint-8-hardening.md)            | Hardening + demo prep   | Bug fixing, performance, manual test pass, demo data, demo script                                          | 2–3 days | Planned |
+| Sprint                                             | Focus                   | Outcome                                                                                                    | Estimate | Status      |
+| -------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- | -------- | ----------- |
+| [0](docs/sprints/sprint-0-setup.md)                | Setup                   | Monorepo, web and API skeletons, Prisma + SQLite, uploads folder, lint/typecheck/test scripts, seed script | 1 day    | Done        |
+| [1](docs/sprints/sprint-1-auth.md)                 | Authentication          | Register, login, logout, protected routes                                                                  | 1–2 days | Done        |
+| [2](docs/sprints/sprint-2-projects-editor.md)      | Projects + empty editor | Dashboard CRUD; editor with 3D canvas, grid and camera                                                     | 2 days   | Done        |
+| [3](docs/sprints/sprint-3-environment.md)          | Environment             | Floor size and material, walls, interior/exterior presets, lighting                                        | 2 days   | Done        |
+| [4](docs/sprints/sprint-4-models.md)               | Models                  | Upload, library panel, GLB loading, placing models on the floor                                            | 2–3 days | Done        |
+| [5](docs/sprints/sprint-5-transform-dimensions.md) | Transform + dimensions  | Move/rotate/scale gizmo, snapping, real-world sizing in metres                                             | 2–3 days | Implemented |
+| [6](docs/sprints/sprint-6-persistence.md)          | Persistence             | Save/load workspaces, autosave, thumbnails (**MVP complete**)                                              | 2 days   | Planned     |
+| [7](docs/sprints/sprint-7-presentation.md)         | Presentation + polish   | Share link viewer, PNG export, camera presets, built-in models                                             | 2–3 days | Planned     |
+| [8](docs/sprints/sprint-8-hardening.md)            | Hardening + demo prep   | Bug fixing, performance, manual test pass, demo data, demo script                                          | 2–3 days | Planned     |
 
 ## 5. Testing
 

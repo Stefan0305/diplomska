@@ -1,6 +1,6 @@
 import { createDefaultScene, sceneSchema, type ProjectDetail } from '@app/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MAX_OBJECTS, useEditorStore } from './store';
+import { DUPLICATE_OFFSET, MAX_OBJECTS, useEditorStore } from './store';
 
 function makeProject(): ProjectDetail {
   return {
@@ -206,5 +206,86 @@ describe('editor store: objects', () => {
     store().addObject('m');
     store().clearSelection();
     expect(store()).toMatchObject({ selectedObjectId: null, selectedWallId: null });
+  });
+});
+
+describe('editor store: transforms', () => {
+  let id: string;
+  beforeEach(() => {
+    store().reset();
+    store().loadProject(makeProject());
+    id = store().addObject('model-1')!;
+  });
+  const object = (objectId = id) => store().scene?.objects.find((o) => o.id === objectId);
+
+  it('moves an object and keeps it on the floor (y forced to 0)', () => {
+    store().updateObject(id, { position: [1.5, 2, -3] });
+    expect(object()?.position).toEqual([1.5, 0, -3]);
+  });
+
+  it('rotates around Y and wraps the angle into (-π, π]', () => {
+    store().updateObject(id, { rotationY: (3 * Math.PI) / 2 });
+    expect(object()?.rotationY).toBeCloseTo(-Math.PI / 2, 12);
+  });
+
+  it('rescales uniformly within the schema limits', () => {
+    store().updateObject(id, { scale: 0.75 });
+    expect(object()?.scale).toBe(0.75);
+    store().updateObject(id, { scale: 99999 });
+    expect(object()?.scale).toBe(1000);
+  });
+
+  it('ignores invalid values instead of corrupting the scene', () => {
+    store().updateObject(id, {
+      position: [Number.NaN, 0, 0],
+      rotationY: Number.POSITIVE_INFINITY,
+      scale: -2,
+    });
+    expect(object()).toMatchObject({ position: [0, 0, 0], rotationY: 0, scale: 1 });
+    store().updateObject(id, { scale: 0 });
+    expect(object()?.scale).toBe(1);
+  });
+
+  it('only changes the targeted object', () => {
+    const other = store().addObject('model-2')!;
+    store().updateObject(id, { position: [4, 0, 4] });
+    expect(object(other)?.position).toEqual([0, 0, 0]);
+  });
+
+  it('removes an object and clears its selection', () => {
+    store().selectObject(id);
+    store().removeObject(id);
+    expect(object()).toBeUndefined();
+    expect(store().selectedObjectId).toBeNull();
+  });
+
+  it('duplicates next to the original with the same rotation and scale, and selects the copy', () => {
+    store().updateObject(id, { position: [1, 0, 2], rotationY: 0.5, scale: 2 });
+    const copyId = store().duplicateObject(id)!;
+    expect(copyId).not.toBe(id);
+    expect(object(copyId)).toMatchObject({
+      modelId: 'model-1',
+      position: [1 + DUPLICATE_OFFSET, 0, 2 + DUPLICATE_OFFSET],
+      rotationY: 0.5,
+      scale: 2,
+    });
+    expect(store().selectedObjectId).toBe(copyId);
+  });
+
+  it('returns null when duplicating an unknown object', () => {
+    expect(store().duplicateObject('nope')).toBeNull();
+  });
+
+  it('keeps gizmo settings across projects', () => {
+    store().setTransformMode('rotate');
+    store().setSnapEnabled(false);
+    store().loadProject(makeProject());
+    expect(store()).toMatchObject({ transformMode: 'rotate', snapEnabled: false });
+  });
+
+  it('always leaves a schema-valid scene', () => {
+    store().updateObject(id, { position: [1e6, -5, 3], rotationY: 100, scale: 1e-9 });
+    store().duplicateObject(id);
+    expect(sceneSchema.safeParse(store().scene).success).toBe(true);
   });
 });

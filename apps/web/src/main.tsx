@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
+import { TooltipProvider } from './components/ui/tooltip';
 import { createQueryClient } from './lib/queryClient';
 import './index.css';
 
@@ -15,7 +16,9 @@ createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <App />
+        <TooltipProvider delayDuration={300}>
+          <App />
+        </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

@@ -8,19 +8,14 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { EditorViewport } from '@/features/editor/EditorViewport';
 import { EnvironmentPanel } from '@/features/editor/panels/EnvironmentPanel';
+import { ObjectPanel } from '@/features/editor/panels/ObjectPanel';
 import { useEditorStore } from '@/features/editor/store';
+import { TransformToolbar } from '@/features/editor/TransformToolbar';
+import { useEditorShortcuts } from '@/features/editor/useEditorShortcuts';
+import { useModelMap } from '@/features/models/hooks';
 import { ModelLibraryPanel } from '@/features/models/ModelLibraryPanel';
 import { useProject } from '@/features/projects/hooks';
 import { ApiError } from '@/lib/api';
-
-function PanelPlaceholder({ title, sprint }: { title: string; sprint: number }) {
-  return (
-    <div className="flex flex-col gap-1 p-4">
-      <h2 className="text-sm font-medium">{title}</h2>
-      <p className="text-xs text-muted-foreground">Coming in Sprint {sprint}.</p>
-    </div>
-  );
-}
 
 export function EditorPage() {
   const { id = '' } = useParams();
@@ -29,6 +24,11 @@ export function EditorPage() {
   const reset = useEditorStore((s) => s.reset);
   const projectName = useEditorStore((s) => s.projectName);
   const isDirty = useEditorStore((s) => s.isDirty);
+  const selectedObject = useEditorStore((s) =>
+    s.selectedObjectId ? s.scene?.objects.find((o) => o.id === s.selectedObjectId) : undefined,
+  );
+  const models = useModelMap();
+  useEditorShortcuts();
 
   // Load the fetched project into the editor store; clear it when leaving the editor.
   useEffect(() => {
@@ -86,11 +86,19 @@ export function EditorPage() {
         </aside>
         <div className="relative min-w-0 flex-1">
           <EditorViewport />
+          <TransformToolbar />
         </div>
         <aside className="hidden w-72 shrink-0 overflow-y-auto border-l bg-background lg:block">
-          <EnvironmentPanel />
-          <Separator />
-          <PanelPlaceholder title="Properties" sprint={5} />
+          {/* The selected object's properties replace the environment settings while selected. */}
+          {selectedObject ? (
+            <ObjectPanel
+              key={selectedObject.id}
+              object={selectedObject}
+              model={models?.get(selectedObject.modelId)}
+            />
+          ) : (
+            <EnvironmentPanel />
+          )}
         </aside>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import {
+  clampScale,
   createEnvironmentPreset,
+  normalizeAngle,
   createWall,
   resizeEnvironment,
   WALL_HEIGHT_MAX,
@@ -17,6 +19,11 @@ import {
 import { create } from 'zustand';
 
 export type WallPatch = Partial<Omit<Wall, 'id'>>;
+export type ObjectPatch = Partial<Pick<SceneObject, 'position' | 'rotationY' | 'scale'>>;
+export type TransformMode = 'translate' | 'rotate';
+
+/** Offset of a duplicate from its original, so the copy is visible next to it. */
+export const DUPLICATE_OFFSET = 0.5;
 
 /**
  * Live editor state. React Three Fiber components render from it and editing actions write to
@@ -29,6 +36,9 @@ export interface EditorState {
   isDirty: boolean;
   selectedObjectId: string | null;
   selectedWallId: string | null;
+  /** Gizmo settings: kept across projects, not saved. */
+  transformMode: TransformMode;
+  snapEnabled: boolean;
 
   loadProject: (project: ProjectDetail) => void;
   reset: () => void;
@@ -49,6 +59,14 @@ export interface EditorState {
   addObject: (modelId: string) => string | null;
   /** Remove every object that uses a model (after the model is deleted); returns the count. */
   removeObjectsByModel: (modelId: string) => number;
+  /** Move, rotate or rescale an object; values are kept valid (on the floor, angle wrapped). */
+  updateObject: (id: string, patch: ObjectPatch) => void;
+  removeObject: (id: string) => void;
+  /** Copy an object next to the original and select the copy; returns its id. */
+  duplicateObject: (id: string) => string | null;
+
+  setTransformMode: (mode: TransformMode) => void;
+  setSnapEnabled: (enabled: boolean) => void;
 }
 
 /** The scene schema allows at most this many objects. */
@@ -79,6 +97,24 @@ function sanitizeWallPatch(patch: WallPatch): WallPatch {
   return result;
 }
 
+/**
+ * Keep an object valid: it always stands on the floor (y = 0, a deliberate simplification),
+ * its angle is wrapped into (-π, π] and its scale stays within the schema limits.
+ */
+function sanitizeObjectPatch(patch: ObjectPatch): ObjectPatch {
+  const result: ObjectPatch = {};
+  if (patch.position && patch.position.every(Number.isFinite)) {
+    result.position = [patch.position[0], 0, patch.position[2]];
+  }
+  if (patch.rotationY !== undefined && Number.isFinite(patch.rotationY)) {
+    result.rotationY = normalizeAngle(patch.rotationY);
+  }
+  if (patch.scale !== undefined && Number.isFinite(patch.scale) && patch.scale > 0) {
+    result.scale = clampScale(patch.scale);
+  }
+  return result;
+}
+
 export const useEditorStore = create<EditorState>()((set, get) => {
   /** Apply a change to the environment (no-op before a project is loaded). */
   function editEnvironment(change: (env: Environment) => Environment) {
@@ -96,6 +132,8 @@ export const useEditorStore = create<EditorState>()((set, get) => {
 
   return {
     ...initialState,
+    transformMode: 'translate',
+    snapEnabled: true,
 
     loadProject: (project) =>
       set({
@@ -167,5 +205,34 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       if (selected && removed.some((o) => o.id === selected)) set({ selectedObjectId: null });
       return removed.length;
     },
+
+    updateObject: (id, patch) => {
+      const safe = sanitizeObjectPatch(patch);
+      if (Object.keys(safe).length === 0) return;
+      editObjects((objects) => objects.map((o) => (o.id === id ? { ...o, ...safe } : o)));
+    },
+
+    removeObject: (id) => {
+      editObjects((objects) => objects.filter((o) => o.id !== id));
+      if (get().selectedObjectId === id) set({ selectedObjectId: null });
+    },
+
+    duplicateObject: (id) => {
+      const scene = get().scene;
+      const original = scene?.objects.find((o) => o.id === id);
+      if (!scene || !original || scene.objects.length >= MAX_OBJECTS) return null;
+      const [x, , z] = original.position;
+      const copy: SceneObject = {
+        ...original,
+        id: crypto.randomUUID(),
+        position: [x + DUPLICATE_OFFSET, 0, z + DUPLICATE_OFFSET],
+      };
+      editObjects((objects) => [...objects, copy]);
+      set({ selectedObjectId: copy.id, selectedWallId: null });
+      return copy.id;
+    },
+
+    setTransformMode: (mode) => set({ transformMode: mode }),
+    setSnapEnabled: (enabled) => set({ snapEnabled: enabled }),
   };
 });

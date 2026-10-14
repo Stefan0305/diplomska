@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { useModelMap } from '@/features/models/hooks';
 import { environmentLooks } from './materials';
 import { Floor } from './scene/Floor';
+import { isGizmoClick } from './scene/gizmoGuard';
 import { SceneObjects } from './scene/SceneObjects';
 import { Walls } from './scene/Walls';
 import { useEditorStore } from './store';
@@ -15,11 +16,20 @@ export function EditorViewport() {
   const environment = useEditorStore((s) => s.scene?.environment);
   const objects = useEditorStore((s) => s.scene?.objects);
   const selectedWallId = useEditorStore((s) => s.selectedWallId);
+  const selectedObjectId = useEditorStore((s) => s.selectedObjectId);
   const selectWall = useEditorStore((s) => s.selectWall);
   const selectObject = useEditorStore((s) => s.selectObject);
   const clearSelection = useEditorStore((s) => s.clearSelection);
   // Read outside <Canvas>: hooks that need React context stay in the DOM tree.
   const models = useModelMap();
+
+  // Ignore the click that ends a gizmo drag, so it doesn't change the selection.
+  const deselect = () => {
+    if (!isGizmoClick()) clearSelection();
+  };
+  const pickWall = (id: string) => {
+    if (!isGizmoClick()) selectWall(id);
+  };
 
   if (!environment) return null;
   const look = environmentLooks[environment.type];
@@ -29,20 +39,25 @@ export function EditorViewport() {
       camera={{ position: [8, 7, 9], fov: 45, near: 0.1, far: 1000 }}
       dpr={[1, 2]}
       // A click that hits nothing (the sky) clears the selection.
-      onPointerMissed={clearSelection}
+      onPointerMissed={deselect}
     >
       <color attach="background" args={[look.background]} />
       <ambientLight intensity={look.ambient} />
       <directionalLight position={[10, 15, 8]} intensity={look.sun} />
 
-      <Floor environment={environment} onClick={clearSelection} />
+      <Floor environment={environment} onClick={deselect} />
       <Walls
         walls={environment.walls}
         color={look.wallColor}
         selectedWallId={selectedWallId}
-        onSelect={selectWall}
+        onSelect={pickWall}
       />
-      <SceneObjects objects={objects ?? []} models={models} onSelect={selectObject} />
+      <SceneObjects
+        objects={objects ?? []}
+        models={models}
+        selectedObjectId={selectedObjectId}
+        onSelect={selectObject}
+      />
 
       {/* Metre grid drawn just above the floor so it stays visible on every material. */}
       <Grid

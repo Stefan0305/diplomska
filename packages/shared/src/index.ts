@@ -5,3 +5,4 @@ export * from './health';
 export * from './model';
 export * from './project';
 export * from './scene';
+export * from './sizing';

@@ -39,6 +39,10 @@ export const environmentSchema = z.object({
   walls: z.array(wallSchema).max(200),
 });
 
+/** Uniform scale limits: 1/1000 to 1000 times the model's native size. */
+export const OBJECT_SCALE_MIN = 0.001;
+export const OBJECT_SCALE_MAX = 1000;
+
 export const sceneObjectSchema = z.object({
   id: z.string().min(1),
   modelId: z.string().min(1),
@@ -46,7 +50,7 @@ export const sceneObjectSchema = z.object({
   /** Rotation around the vertical axis only, in radians. */
   rotationY: finite,
   /** Uniform scale factor (proportions are always kept). */
-  scale: z.number().positive().max(1000),
+  scale: z.number().min(OBJECT_SCALE_MIN).max(OBJECT_SCALE_MAX),
 });
 
 export const sceneSchema = z.object({
