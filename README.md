@@ -73,6 +73,14 @@ Create a migration after changing `apps/api/prisma/schema.prisma`:
 npm run db:migrate -- --name describe_the_change
 ```
 
+Regenerate or check the built-in test models (after changing `apps/api/scripts/generate-test-models.ts`):
+
+```bash
+npm run models:generate -w @app/api   # writes apps/api/assets/models/*.glb + models.json
+npm run models:check -w @app/api      # prints each model's size and validates its header
+npm run db:seed                       # registers the built-ins in the database
+```
+
 Reset the database (deletes all data):
 
 ```bash
@@ -117,4 +125,5 @@ docs/sprints/      one plan file per sprint
   Prisma, so don't run it.
 - **API dev server** uses `node --watch` with the `tsx` loader. `tsx watch` hangs on Windows when
   started through `concurrently`.
+- **Draco decoder:** `npm install` copies three.js's Draco decoder into `apps/web/public/draco/` (git-ignored), so compressed models load without internet. If compressed models fail to load, re-run `npm install`.
 - **Line endings** are normalised to LF via `.gitattributes`.

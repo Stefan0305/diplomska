@@ -11,6 +11,7 @@ import {
   type FloorMaterial,
   type ProjectDetail,
   type Scene,
+  type SceneObject,
   type Wall,
 } from '@app/shared';
 import { create } from 'zustand';
@@ -33,6 +34,7 @@ export interface EditorState {
   reset: () => void;
   selectObject: (id: string | null) => void;
   selectWall: (id: string | null) => void;
+  clearSelection: () => void;
 
   setFloorSize: (width: number, depth: number) => void;
   setFloorMaterial: (material: FloorMaterial) => void;
@@ -42,7 +44,15 @@ export interface EditorState {
   addWall: () => string | null;
   updateWall: (id: string, patch: WallPatch) => void;
   removeWall: (id: string) => void;
+
+  /** Place a model at the centre of the floor and select it; returns the new object id. */
+  addObject: (modelId: string) => string | null;
+  /** Remove every object that uses a model (after the model is deleted); returns the count. */
+  removeObjectsByModel: (modelId: string) => number;
 }
+
+/** The scene schema allows at most this many objects. */
+export const MAX_OBJECTS = 500;
 
 const initialState = {
   projectId: null,
@@ -77,6 +87,13 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     set({ scene: { ...scene, environment: change(scene.environment) }, isDirty: true });
   }
 
+  /** Apply a change to the object list (no-op before a project is loaded). */
+  function editObjects(change: (objects: SceneObject[]) => SceneObject[]) {
+    const { scene } = get();
+    if (!scene) return;
+    set({ scene: { ...scene, objects: change(scene.objects) }, isDirty: true });
+  }
+
   return {
     ...initialState,
 
@@ -93,6 +110,7 @@ export const useEditorStore = create<EditorState>()((set, get) => {
 
     selectObject: (id) => set({ selectedObjectId: id, selectedWallId: null }),
     selectWall: (id) => set({ selectedWallId: id, selectedObjectId: null }),
+    clearSelection: () => set({ selectedObjectId: null, selectedWallId: null }),
 
     setFloorSize: (width, depth) => editEnvironment((env) => resizeEnvironment(env, width, depth)),
 
@@ -122,6 +140,32 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     removeWall: (id) => {
       editEnvironment((env) => ({ ...env, walls: env.walls.filter((wall) => wall.id !== id) }));
       if (get().selectedWallId === id) set({ selectedWallId: null });
+    },
+
+    addObject: (modelId) => {
+      const scene = get().scene;
+      if (!scene || scene.objects.length >= MAX_OBJECTS) return null;
+      const object: SceneObject = {
+        id: crypto.randomUUID(),
+        modelId,
+        position: [0, 0, 0],
+        rotationY: 0,
+        scale: 1,
+      };
+      editObjects((objects) => [...objects, object]);
+      set({ selectedObjectId: object.id, selectedWallId: null });
+      return object.id;
+    },
+
+    removeObjectsByModel: (modelId) => {
+      const scene = get().scene;
+      if (!scene) return 0;
+      const removed = scene.objects.filter((o) => o.modelId === modelId);
+      if (removed.length === 0) return 0;
+      editObjects((objects) => objects.filter((o) => o.modelId !== modelId));
+      const selected = get().selectedObjectId;
+      if (selected && removed.some((o) => o.id === selected)) set({ selectedObjectId: null });
+      return removed.length;
     },
   };
 });

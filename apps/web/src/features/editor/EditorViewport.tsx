@@ -1,18 +1,25 @@
 import { GizmoHelper, GizmoViewport, Grid, OrbitControls } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
+import { useModelMap } from '@/features/models/hooks';
 import { environmentLooks } from './materials';
 import { Floor } from './scene/Floor';
+import { SceneObjects } from './scene/SceneObjects';
 import { Walls } from './scene/Walls';
 import { useEditorStore } from './store';
 
 /**
  * The 3D view, rendered from the editor store. 1 unit = 1 metre; the floor is the XZ plane
- * at y = 0, centred on the origin. Models arrive in Sprint 4.
+ * at y = 0, centred on the origin.
  */
 export function EditorViewport() {
   const environment = useEditorStore((s) => s.scene?.environment);
+  const objects = useEditorStore((s) => s.scene?.objects);
   const selectedWallId = useEditorStore((s) => s.selectedWallId);
   const selectWall = useEditorStore((s) => s.selectWall);
+  const selectObject = useEditorStore((s) => s.selectObject);
+  const clearSelection = useEditorStore((s) => s.clearSelection);
+  // Read outside <Canvas>: hooks that need React context stay in the DOM tree.
+  const models = useModelMap();
 
   if (!environment) return null;
   const look = environmentLooks[environment.type];
@@ -22,19 +29,20 @@ export function EditorViewport() {
       camera={{ position: [8, 7, 9], fov: 45, near: 0.1, far: 1000 }}
       dpr={[1, 2]}
       // A click that hits nothing (the sky) clears the selection.
-      onPointerMissed={() => selectWall(null)}
+      onPointerMissed={clearSelection}
     >
       <color attach="background" args={[look.background]} />
       <ambientLight intensity={look.ambient} />
       <directionalLight position={[10, 15, 8]} intensity={look.sun} />
 
-      <Floor environment={environment} onClick={() => selectWall(null)} />
+      <Floor environment={environment} onClick={clearSelection} />
       <Walls
         walls={environment.walls}
         color={look.wallColor}
         selectedWallId={selectedWallId}
         onSelect={selectWall}
       />
+      <SceneObjects objects={objects ?? []} models={models} onSelect={selectObject} />
 
       {/* Metre grid drawn just above the floor so it stays visible on every material. */}
       <Grid

@@ -1,0 +1,22 @@
+[
+  {
+    "file": "test-table.glb",
+    "name": "Test table",
+    "category": "furniture"
+  },
+  {
+    "file": "test-plant.glb",
+    "name": "Test plant",
+    "category": "plants"
+  },
+  {
+    "file": "test-cube-1m.glb",
+    "name": "Reference cube (1 m)",
+    "category": "other"
+  },
+  {
+    "file": "test-tree-draco.glb",
+    "name": "Test tree (Draco)",
+    "category": "outdoor"
+  }
+]

@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { EditorViewport } from '@/features/editor/EditorViewport';
 import { EnvironmentPanel } from '@/features/editor/panels/EnvironmentPanel';
 import { useEditorStore } from '@/features/editor/store';
+import { ModelLibraryPanel } from '@/features/models/ModelLibraryPanel';
 import { useProject } from '@/features/projects/hooks';
 import { ApiError } from '@/lib/api';
 
@@ -80,8 +81,8 @@ export function EditorPage() {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="hidden w-60 shrink-0 border-r bg-background md:block">
-          <PanelPlaceholder title="Model library" sprint={4} />
+        <aside className="hidden w-64 shrink-0 border-r bg-background md:block">
+          <ModelLibraryPanel />
         </aside>
         <div className="relative min-w-0 flex-1">
           <EditorViewport />

@@ -8,7 +8,8 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node scripts/copy-draco.mjs"
   },
   "dependencies": {
     "@app/shared": "^0.0.0",

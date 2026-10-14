@@ -1,6 +1,6 @@
 import { createDefaultScene, sceneSchema, type ProjectDetail } from '@app/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useEditorStore } from './store';
+import { MAX_OBJECTS, useEditorStore } from './store';
 
 function makeProject(): ProjectDetail {
   return {
@@ -151,5 +151,60 @@ describe('editor store: environment', () => {
     store().applyEnvironmentPreset('exterior');
     store().addWall();
     expect(sceneSchema.safeParse(store().scene).success).toBe(true);
+  });
+});
+
+describe('editor store: objects', () => {
+  beforeEach(() => {
+    store().reset();
+    store().loadProject(makeProject());
+  });
+  const objects = () => store().scene?.objects ?? [];
+
+  it('places a model at the centre of the floor, unrotated and unscaled, and selects it', () => {
+    const id = store().addObject('model-1');
+    expect(objects()).toEqual([
+      { id, modelId: 'model-1', position: [0, 0, 0], rotationY: 0, scale: 1 },
+    ]);
+    expect(store().selectedObjectId).toBe(id);
+    expect(store().isDirty).toBe(true);
+  });
+
+  it('gives each placed object its own id, even for the same model', () => {
+    const a = store().addObject('model-1');
+    const b = store().addObject('model-1');
+    expect(a).not.toBe(b);
+    expect(objects()).toHaveLength(2);
+  });
+
+  it('refuses to add more objects than the scene schema allows', () => {
+    for (let i = 0; i < MAX_OBJECTS; i++) store().addObject('m');
+    expect(store().addObject('m')).toBeNull();
+    expect(objects()).toHaveLength(MAX_OBJECTS);
+    expect(sceneSchema.safeParse(store().scene).success).toBe(true);
+  });
+
+  it('removes all objects of a deleted model and clears their selection', () => {
+    store().addObject('keep');
+    store().addObject('gone');
+    const selected = store().addObject('gone');
+    expect(store().selectedObjectId).toBe(selected);
+
+    expect(store().removeObjectsByModel('gone')).toBe(2);
+    expect(objects().map((o) => o.modelId)).toEqual(['keep']);
+    expect(store().selectedObjectId).toBeNull();
+  });
+
+  it('returns 0 and changes nothing when the model is not used', () => {
+    store().addObject('keep');
+    useEditorStore.setState({ isDirty: false });
+    expect(store().removeObjectsByModel('other')).toBe(0);
+    expect(store().isDirty).toBe(false);
+  });
+
+  it('clears any selection', () => {
+    store().addObject('m');
+    store().clearSelection();
+    expect(store()).toMatchObject({ selectedObjectId: null, selectedWallId: null });
   });
 });

@@ -7,8 +7,6 @@ datasource db {
   provider = "sqlite"
 }
 
-// Models are added sprint by sprint (Model in Sprint 4).
-
 model User {
   id           String    @id @default(cuid())
   /// Stored lowercased (normalized by the shared Zod schema).
@@ -17,6 +15,24 @@ model User {
   name         String
   createdAt    DateTime  @default(now())
   projects     Project[]
+  models       Model[]
+}
+
+/// A GLB in the model library. Native dimensions are not stored: the editor measures them.
+model Model {
+  id        String   @id @default(cuid())
+  /// null = built-in model, visible to everyone and not deletable.
+  ownerId   String?
+  owner     User?    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  /// One of the shared modelCategories (SQLite has no enums; validated by Zod).
+  category  String
+  /// Relative to its root: apps/api/assets/models/ for built-ins, the uploads folder otherwise.
+  filePath  String   @unique
+  fileSize  Int
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
 }
 
 model Project {

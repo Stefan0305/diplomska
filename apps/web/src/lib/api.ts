@@ -55,6 +55,24 @@ export async function apiSend<T extends z.ZodType>(
   return schema.parse(await res.json());
 }
 
+/**
+ * Upload files as multipart/form-data. The browser sets the Content-Type header itself
+ * (including the multipart boundary), so none is set here.
+ */
+export async function apiUpload<T extends z.ZodType>(
+  path: string,
+  formData: FormData,
+  schema: T,
+): Promise<z.infer<T>> {
+  const res = await fetch(`/api${path}`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: formData,
+  });
+  if (!res.ok) throw await toApiError(res, 'POST', path);
+  return schema.parse(await res.json());
+}
+
 /** Send a request that returns no content (204). */
 export async function apiSendNoContent(
   method: Exclude<Method, 'GET'>,

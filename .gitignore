@@ -27,3 +27,6 @@ Thumbs.db
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Draco decoder copied from three.js on npm install
+apps/web/public/draco/
