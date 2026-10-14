@@ -1,6 +1,6 @@
 # Sprint 2: Projects and the empty editor
 
-**Status:** Planned
+**Status:** Done (2026-10-14)
 **Depends on:** Sprint 1
 **Requirements covered:** FR2, FR8 (basic camera)
 
@@ -28,10 +28,10 @@ A logged-in user manages their projects on a dashboard and opens a project in an
 
 ## Acceptance criteria
 
-- [ ] A user can create, rename, duplicate and delete projects
-- [ ] A user cannot open or change another user's project
-- [ ] Opening a project shows the 3D viewport with a grid
-- [ ] The camera can orbit, pan and zoom with the mouse
+- [x] A user can create, rename, duplicate and delete projects
+- [x] A user cannot open or change another user's project
+- [x] Opening a project shows the 3D viewport with a grid
+- [x] The camera can orbit, pan and zoom with the mouse
 
 ## Tests
 
@@ -46,4 +46,14 @@ A logged-in user manages their projects on a dashboard and opens a project in an
 
 ## Notes / decisions
 
-_Filled in during the sprint._
+- **The full scene format is defined now** (`packages/shared/src/scene.ts`, version 1): environment (type, width, depth, floor material, walls) and objects (`position`, `rotationY`, uniform `scale`). New projects start as an empty 6 × 5 m interior. Later sprints fill in behaviour, not the format.
+- **Another user's project returns 404, not 403**, so project ids cannot be probed. The check is a pure function (`assertOwnedProject`) and is unit tested.
+- **Stored scenes are validated when read as well as when written:** corrupt data causes a server error instead of reaching the editor.
+- **Duplicating copies only the scene**, not the thumbnail or the share link. The copy is named "<name> (copy)" and trimmed to fit the 80-character limit.
+- **Deleting a user deletes their projects** (`onDelete: Cascade`). The list is sorted by most recently updated, backed by an `(ownerId, updatedAt)` index.
+- **The editor is lazy-loaded:** three.js lives in its own chunk (about 250 kB gzipped) and only downloads when a project is opened.
+- **Layout:** normal pages use a centred layout; the editor uses a full-height layout under the fixed 3.5rem header.
+- **The Zustand store copies the scene** (`structuredClone`) when a project loads, so editing never mutates TanStack Query's cached server data.
+- **The `react-hooks/set-state-in-effect` lint rule** led to resetting dialog forms by mounting them inside `DialogContent` (which unmounts when closed) instead of resetting in an effect.
+- **Sonner toasts** are used now for action feedback (planned for Sprint 6), pinned to the light theme without `next-themes`.
+- **`npm run db:migrate`** runs only `prisma migrate dev`, so `-- --name x` reaches it; `prisma generate` runs as the `postdb:migrate` script.

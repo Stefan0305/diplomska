@@ -7,13 +7,31 @@ datasource db {
   provider = "sqlite"
 }
 
-// Models are added sprint by sprint (Project in Sprint 2, Model in Sprint 4).
+// Models are added sprint by sprint (Model in Sprint 4).
 
 model User {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   /// Stored lowercased (normalized by the shared Zod schema).
-  email        String   @unique
+  email        String    @unique
   passwordHash String
   name         String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
+  projects     Project[]
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  ownerId    String
+  owner      User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name       String
+  /// Serialized JSON validated by the shared sceneSchema; never queried by contents.
+  scene      String
+  /// Relative path of the thumbnail image under the uploads folder (Sprint 6).
+  thumbnail  String?
+  /// Set while the project is shared read-only (Sprint 7).
+  shareToken String?  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([ownerId, updatedAt])
 }

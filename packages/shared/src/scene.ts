@@ -1,0 +1,74 @@
+import { z } from 'zod';
+
+/**
+ * The saved contents of a project. This is the ONLY definition of the scene shape:
+ * the API validates against it before saving and the editor store serializes to it.
+ * Units: metres; rotations: radians. Bump SCENE_VERSION on breaking changes.
+ */
+export const SCENE_VERSION = 1;
+
+const finite = z.number().finite();
+/** [x, z] on the floor plane. */
+const point2 = z.tuple([finite, finite]);
+/** [x, y, z] in world space. */
+const point3 = z.tuple([finite, finite, finite]);
+
+export const environmentTypes = ['interior', 'exterior'] as const;
+export const floorMaterials = ['parquet', 'tiles', 'concrete', 'grass', 'soil', 'gravel'] as const;
+
+export const ENVIRONMENT_SIZE_MIN = 1;
+export const ENVIRONMENT_SIZE_MAX = 200;
+
+export const wallSchema = z.object({
+  id: z.string().min(1),
+  start: point2,
+  end: point2,
+  height: z.number().min(0.1).max(20),
+  thickness: z.number().min(0.01).max(2),
+});
+
+export const environmentSchema = z.object({
+  type: z.enum(environmentTypes),
+  width: z.number().min(ENVIRONMENT_SIZE_MIN).max(ENVIRONMENT_SIZE_MAX),
+  depth: z.number().min(ENVIRONMENT_SIZE_MIN).max(ENVIRONMENT_SIZE_MAX),
+  floorMaterial: z.enum(floorMaterials),
+  walls: z.array(wallSchema).max(200),
+});
+
+export const sceneObjectSchema = z.object({
+  id: z.string().min(1),
+  modelId: z.string().min(1),
+  position: point3,
+  /** Rotation around the vertical axis only, in radians. */
+  rotationY: finite,
+  /** Uniform scale factor (proportions are always kept). */
+  scale: z.number().positive().max(1000),
+});
+
+export const sceneSchema = z.object({
+  version: z.literal(SCENE_VERSION),
+  environment: environmentSchema,
+  objects: z.array(sceneObjectSchema).max(500),
+});
+
+export type EnvironmentType = (typeof environmentTypes)[number];
+export type FloorMaterial = (typeof floorMaterials)[number];
+export type Wall = z.infer<typeof wallSchema>;
+export type Environment = z.infer<typeof environmentSchema>;
+export type SceneObject = z.infer<typeof sceneObjectSchema>;
+export type Scene = z.infer<typeof sceneSchema>;
+
+/** A new project's scene: an empty 6 × 5 m room. Walls arrive in Sprint 3. */
+export function createDefaultScene(): Scene {
+  return {
+    version: SCENE_VERSION,
+    environment: {
+      type: 'interior',
+      width: 6,
+      depth: 5,
+      floorMaterial: 'parquet',
+      walls: [],
+    },
+    objects: [],
+  };
+}

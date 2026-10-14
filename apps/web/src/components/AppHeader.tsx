@@ -15,8 +15,9 @@ export function AppHeader() {
   }
 
   return (
-    <header className="border-b">
-      <nav className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3 text-sm">
+    // Fixed h-14 (3.5rem): the full-screen editor layout subtracts exactly this height.
+    <header className="h-14 shrink-0 border-b">
+      <nav className="mx-auto flex h-full max-w-5xl items-center gap-6 px-4 text-sm">
         <Link to="/" className="font-heading font-semibold">
           Spatial Planner 3D
         </Link>

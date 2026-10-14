@@ -7,6 +7,7 @@ import { createAuthRouter } from './auth/routes';
 import type { Config } from './config';
 import { toErrorResponse } from './errors';
 import type { PrismaClient } from './generated/prisma/client';
+import { createProjectsRouter } from './projects/routes';
 
 export function createApp(config: Config, prisma: PrismaClient) {
   const app = express();
@@ -16,6 +17,7 @@ export function createApp(config: Config, prisma: PrismaClient) {
   const api = express.Router();
 
   api.use('/auth', createAuthRouter(prisma, config.jwtSecret));
+  api.use('/projects', createProjectsRouter(prisma, config.jwtSecret));
 
   api.get('/health', async (_req, res) => {
     let database: HealthResponse['database'] = 'ok';

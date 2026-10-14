@@ -67,6 +67,12 @@ Run a single test file or test (from inside the workspace folder, e.g. `apps/api
 npx vitest run src/config.test.ts -t "rejects a short JWT secret"
 ```
 
+Create a migration after changing `apps/api/prisma/schema.prisma`:
+
+```bash
+npm run db:migrate -- --name describe_the_change
+```
+
 Reset the database (deletes all data):
 
 ```bash
