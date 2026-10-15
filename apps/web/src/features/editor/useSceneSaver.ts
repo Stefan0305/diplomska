@@ -74,13 +74,18 @@ export function useSceneSaver() {
     return () => window.clearTimeout(timer);
   }, [isDirty, isPending, revision, failedRevision, save]);
 
-  // Closing or reloading the tab with unsaved changes asks for confirmation.
+  // Closing or reloading the tab with unsaved changes asks for confirmation. The listener reads
+  // the store at that moment, so it never depends on an effect having re-run in time.
   useEffect(() => {
-    if (!isDirty) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!useEditorStore.getState().isDirty) return;
+      event.preventDefault();
+      // Older browsers (and some current ones) only show the dialog when returnValue is set.
+      event.returnValue = '';
+    };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [isDirty]);
+  }, []);
 
   /** Call before the editor unmounts: saves pending edits without waiting for autosave. */
   const saveOnExit = useCallback(() => {

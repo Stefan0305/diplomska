@@ -9,6 +9,7 @@ import {
   type SizeAxis,
 } from '@app/shared';
 import { Copy, Maximize2, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { NumberField } from '@/components/NumberField';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +22,9 @@ const SIZE_FIELDS: { axis: SizeAxis; label: string }[] = [
   { axis: 1, label: 'Height (Y)' },
   { axis: 2, label: 'Depth (Z)' },
 ];
+
+/** Smallest size that can be typed in; smaller values are rejected, not clamped. */
+export const MIN_TARGET_SIZE = 0.01; // 1 cm
 
 function SectionTitle({ children }: { children: string }) {
   return <h3 className="text-xs font-medium">{children}</h3>;
@@ -45,6 +49,12 @@ export function ObjectPanel({ object, model }: ObjectPanelProps) {
 
   function resize(axis: SizeAxis, target: number) {
     if (!nativeSize) return;
+    // Reject instead of clamping: clamping 0 to a tiny minimum would shrink the object out of
+    // sight. The field then shows the previous value again.
+    if (target < MIN_TARGET_SIZE) {
+      toast.error('Sizes must be at least 1 cm');
+      return;
+    }
     const scale = scaleForTargetSize(nativeSize, axis, target);
     if (scale !== null) updateObject(object.id, { scale });
   }
@@ -147,7 +157,6 @@ export function ObjectPanel({ object, model }: ObjectPanelProps) {
                   label={label}
                   unit="m"
                   value={realSize[axis]}
-                  min={0.001}
                   onCommit={(target) => resize(axis, target)}
                 />
               ))}
