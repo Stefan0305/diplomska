@@ -25,10 +25,16 @@ export type TransformMode = 'translate' | 'rotate';
 /** Offset of a duplicate from its original, so the copy is visible next to it. */
 export const DUPLICATE_OFFSET = 0.5;
 
+/** Undo keeps at most this many steps (a scene is a few KB, so this stays small). */
+export const HISTORY_LIMIT = 100;
+
 /**
  * Live editor state. React Three Fiber components render from it and editing actions write to
  * it; saving serializes `scene`. Every edit sets `isDirty` and bumps `revision`, so a save can
  * tell whether more edits happened while its request was in flight.
+ *
+ * Undo history is a list of whole-scene snapshots (scenes are immutable, so a snapshot is just
+ * a reference). It lives only in this tab and is cleared when another project is loaded.
  */
 export interface EditorState {
   projectId: string | null;
@@ -39,6 +45,11 @@ export interface EditorState {
   revision: number;
   selectedObjectId: string | null;
   selectedWallId: string | null;
+  /** Scenes before (oldest first) and after the current one, for undo and redo. */
+  past: Scene[];
+  future: Scene[];
+  /** True during a gizmo drag: its many small updates become one undo step. */
+  inGesture: boolean;
   /** Gizmo settings: kept across projects, not saved. */
   transformMode: TransformMode;
   snapEnabled: boolean;
@@ -72,6 +83,12 @@ export interface EditorState {
   /** Remove objects whose model no longer exists (deleted since saving); returns the count. */
   removeMissingObjects: (existingModelIds: ReadonlySet<string>) => number;
 
+  undo: () => void;
+  redo: () => void;
+  /** Start a continuous edit (gizmo drag); the edits until endGesture form one undo step. */
+  beginGesture: () => void;
+  endGesture: () => void;
+
   setTransformMode: (mode: TransformMode) => void;
   setSnapEnabled: (enabled: boolean) => void;
 }
@@ -87,7 +104,18 @@ const initialState = {
   revision: 0,
   selectedObjectId: null,
   selectedWallId: null,
+  past: [],
+  future: [],
+  inGesture: false,
 } satisfies Partial<EditorState>;
+
+/** Drop selections that point at objects or walls missing from a scene (after undo/redo). */
+function validSelection(scene: Scene, objectId: string | null, wallId: string | null) {
+  return {
+    selectedObjectId: objectId && scene.objects.some((o) => o.id === objectId) ? objectId : null,
+    selectedWallId: wallId && scene.environment.walls.some((w) => w.id === wallId) ? wallId : null,
+  };
+}
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -124,25 +152,47 @@ function sanitizeObjectPatch(patch: ObjectPatch): ObjectPatch {
 }
 
 export const useEditorStore = create<EditorState>()((set, get) => {
+  /**
+   * Every scene edit goes through here: it records the previous scene for undo (once per
+   * gesture), clears the redo list, and marks the project dirty.
+   */
+  function commit(next: Scene) {
+    const { scene, past, inGesture, revision } = get();
+    if (!scene) return;
+    set({
+      scene: next,
+      ...(!inGesture && { past: [...past, scene].slice(-HISTORY_LIMIT), future: [] }),
+      isDirty: true,
+      revision: revision + 1,
+    });
+  }
+
   /** Apply a change to the environment (no-op before a project is loaded). */
   function editEnvironment(change: (env: Environment) => Environment) {
     const { scene } = get();
-    if (!scene) return;
-    set({
-      scene: { ...scene, environment: change(scene.environment) },
-      isDirty: true,
-      revision: get().revision + 1,
-    });
+    if (scene) commit({ ...scene, environment: change(scene.environment) });
   }
 
   /** Apply a change to the object list (no-op before a project is loaded). */
   function editObjects(change: (objects: SceneObject[]) => SceneObject[]) {
     const { scene } = get();
-    if (!scene) return;
+    if (scene) commit({ ...scene, objects: change(scene.objects) });
+  }
+
+  /** Step back (undo) or forward (redo): the current scene moves to the other list. */
+  function travel(direction: 'undo' | 'redo') {
+    const { scene, past, future, revision, selectedObjectId, selectedWallId, inGesture } = get();
+    const source = direction === 'undo' ? past : future;
+    // Not in the middle of a drag: the gizmo would keep writing over the restored scene.
+    if (!scene || inGesture || source.length === 0) return;
+    const target = direction === 'undo' ? source[source.length - 1]! : source[0]!;
     set({
-      scene: { ...scene, objects: change(scene.objects) },
+      scene: target,
+      past: direction === 'undo' ? past.slice(0, -1) : [...past, scene],
+      future: direction === 'undo' ? [scene, ...future] : future.slice(1),
       isDirty: true,
-      revision: get().revision + 1,
+      revision: revision + 1,
+      ...validSelection(target, selectedObjectId, selectedWallId),
     });
   }
 
@@ -216,11 +266,18 @@ export const useEditorStore = create<EditorState>()((set, get) => {
     },
 
     removeObjectsByModel: (modelId) => {
-      const scene = get().scene;
+      const { scene, past, future, revision } = get();
       if (!scene) return 0;
+      // The model is gone for good (its file is deleted), so this is not an undo step, and the
+      // history loses those objects too: undo must never bring back an object without a model.
+      const strip = (s: Scene): Scene =>
+        s.objects.some((o) => o.modelId === modelId)
+          ? { ...s, objects: s.objects.filter((o) => o.modelId !== modelId) }
+          : s;
+      set({ past: past.map(strip), future: future.map(strip) });
       const removed = scene.objects.filter((o) => o.modelId === modelId);
       if (removed.length === 0) return 0;
-      editObjects((objects) => objects.filter((o) => o.modelId !== modelId));
+      set({ scene: strip(scene), isDirty: true, revision: revision + 1 });
       const selected = get().selectedObjectId;
       if (selected && removed.some((o) => o.id === selected)) set({ selectedObjectId: null });
       return removed.length;
@@ -261,6 +318,24 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       const selected = get().selectedObjectId;
       if (selected && missing.some((o) => o.id === selected)) set({ selectedObjectId: null });
       return missing.length;
+    },
+
+    undo: () => travel('undo'),
+    redo: () => travel('redo'),
+
+    beginGesture: () => {
+      const { scene, past, inGesture } = get();
+      if (!scene || inGesture) return;
+      // Record the scene as it was before the drag; the drag's updates then skip history.
+      set({ past: [...past, scene].slice(-HISTORY_LIMIT), future: [], inGesture: true });
+    },
+
+    endGesture: () => {
+      const { scene, past, inGesture } = get();
+      if (!inGesture) return;
+      // A click on the gizmo without moving changed nothing: drop the empty step.
+      const unchanged = past.length > 0 && past[past.length - 1] === scene;
+      set({ inGesture: false, ...(unchanged && { past: past.slice(0, -1) }) });
     },
 
     setTransformMode: (mode) => set({ transformMode: mode }),

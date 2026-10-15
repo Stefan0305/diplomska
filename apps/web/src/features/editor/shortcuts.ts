@@ -1,6 +1,15 @@
 /** Editor keyboard shortcuts as pure data, so the mapping is unit tested. */
 export type EditorCommand =
-  'move' | 'rotate' | 'toggleSnap' | 'delete' | 'duplicate' | 'deselect' | 'save' | 'help';
+  | 'move'
+  | 'rotate'
+  | 'toggleSnap'
+  | 'delete'
+  | 'duplicate'
+  | 'deselect'
+  | 'save'
+  | 'help'
+  | 'undo'
+  | 'redo';
 
 export interface KeyInput {
   key: string;
@@ -10,13 +19,21 @@ export interface KeyInput {
   shiftKey: boolean;
 }
 
-export function commandForKey({ key, ctrlKey, metaKey, altKey }: KeyInput): EditorCommand | null {
+export function commandForKey({
+  key,
+  ctrlKey,
+  metaKey,
+  altKey,
+  shiftKey,
+}: KeyInput): EditorCommand | null {
   const modifier = ctrlKey || metaKey;
   if (altKey) return null;
   if (modifier) {
     const letter = key.toLowerCase();
     if (letter === 'd') return 'duplicate';
     if (letter === 's') return 'save';
+    if (letter === 'z') return shiftKey ? 'redo' : 'undo';
+    if (letter === 'y') return 'redo';
     return null;
   }
   switch (key.toLowerCase()) {
@@ -46,6 +63,8 @@ export const shortcutList: { keys: string[]; action: string }[] = [
   { keys: ['Ctrl', 'D'], action: 'Duplicate the selected object' },
   { keys: ['Del'], action: 'Delete the selected object or wall' },
   { keys: ['Esc'], action: 'Deselect' },
+  { keys: ['Ctrl', 'Z'], action: 'Undo' },
+  { keys: ['Ctrl', 'Shift', 'Z'], action: 'Redo (or Ctrl+Y)' },
   { keys: ['Ctrl', 'S'], action: 'Save now' },
   { keys: ['?'], action: 'Show this help' },
 ];

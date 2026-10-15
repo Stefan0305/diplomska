@@ -107,7 +107,7 @@ Known limitations (deliberate simplifications):
 - Rotation is around the vertical axis only, and scaling is always proportional.
 - Only GLB is supported as a model format.
 - Uploaded files are served without access control, which is acceptable for a local demo.
-- There is no undo/redo (it was optional in Sprint 5), and objects can overlap (there is no collision detection).
+- Undo/redo history lives only in the open tab (up to 100 steps) and is not saved; deleting a model from the library cannot be undone. Objects can overlap (there is no collision detection).
 - A share link always shows the last saved version, and one person edits a project at a time (no real-time collaboration). If two tabs edit the same project, the last save wins.
 - Thumbnails are captured only when saving from the editor, so the seeded example projects have none until they are opened and saved once.
 - Camera presets frame objects by their position plus a fixed margin, not by their exact size.

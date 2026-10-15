@@ -34,6 +34,14 @@ describe('commandForKey', () => {
     expect(commandForKey(key('D', { metaKey: true }))).toBe('duplicate');
   });
 
+  it('maps Ctrl+Z to undo, Ctrl+Shift+Z and Ctrl+Y to redo (Cmd on macOS)', () => {
+    expect(commandForKey(key('z', { ctrlKey: true }))).toBe('undo');
+    expect(commandForKey(key('Z', { ctrlKey: true, shiftKey: true }))).toBe('redo');
+    expect(commandForKey(key('y', { ctrlKey: true }))).toBe('redo');
+    expect(commandForKey(key('z', { metaKey: true }))).toBe('undo');
+    expect(commandForKey(key('z'))).toBeNull();
+  });
+
   it('maps ? (Shift+/) to help', () => {
     expect(commandForKey(key('?', { shiftKey: true }))).toBe('help');
   });

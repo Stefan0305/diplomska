@@ -1,6 +1,6 @@
 import { createDefaultScene, sceneSchema, type ProjectDetail } from '@app/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DUPLICATE_OFFSET, MAX_OBJECTS, useEditorStore } from './store';
+import { DUPLICATE_OFFSET, HISTORY_LIMIT, MAX_OBJECTS, useEditorStore } from './store';
 
 function makeProject(): ProjectDetail {
   return {
@@ -327,5 +327,103 @@ describe('editor store: saving', () => {
     expect(store().scene?.objects.map((o) => o.modelId)).toEqual(['kept']);
     expect(store().selectedObjectId).toBeNull();
     expect(store().removeMissingObjects(new Set(['kept']))).toBe(0);
+  });
+});
+
+describe('editor store: undo and redo', () => {
+  beforeEach(() => {
+    store().reset();
+    store().loadProject(makeProject());
+  });
+
+  const width = () => env().width;
+
+  it('starts with an empty history after loading', () => {
+    store().setFloorSize(8, 8);
+    store().loadProject(makeProject());
+    expect(store().past).toEqual([]);
+    expect(store().future).toEqual([]);
+  });
+
+  it('undoes and redoes edits in order', () => {
+    store().setFloorSize(8, 5);
+    store().setFloorSize(9, 5);
+    store().undo();
+    expect(width()).toBe(8);
+    store().undo();
+    expect(width()).toBe(6);
+    store().undo(); // nothing left: no-op
+    expect(width()).toBe(6);
+    store().redo();
+    store().redo();
+    expect(width()).toBe(9);
+    store().redo(); // nothing left: no-op
+    expect(width()).toBe(9);
+  });
+
+  it('marks undo and redo as unsaved edits', () => {
+    store().setFloorSize(8, 5);
+    store().markSaved(store().revision);
+    const before = store().revision;
+    store().undo();
+    expect(store().isDirty).toBe(true);
+    expect(store().revision).toBe(before + 1);
+  });
+
+  it('clears the redo list when a new edit is made', () => {
+    store().setFloorSize(8, 5);
+    store().undo();
+    store().setFloorMaterial('tiles');
+    expect(store().future).toEqual([]);
+    store().redo();
+    expect(width()).toBe(6);
+  });
+
+  it('turns a whole gizmo drag into one undo step', () => {
+    const id = store().addObject('m1') ?? '';
+    store().beginGesture();
+    for (let x = 1; x <= 10; x++) store().updateObject(id, { position: [x / 10, 0, 0] });
+    store().endGesture();
+    expect(store().scene?.objects[0]?.position[0]).toBe(1);
+    store().undo();
+    expect(store().scene?.objects[0]?.position[0]).toBe(0);
+    store().undo(); // undoes adding the object
+    expect(store().scene?.objects).toEqual([]);
+  });
+
+  it('records no step for a gizmo click that moved nothing, and ignores undo mid-drag', () => {
+    store().addObject('m1');
+    const steps = store().past.length;
+    store().beginGesture();
+    store().undo();
+    expect(store().scene?.objects).toHaveLength(1);
+    store().endGesture();
+    expect(store().past).toHaveLength(steps);
+  });
+
+  it('clears selections that no longer exist after undo', () => {
+    store().addObject('m1');
+    expect(store().selectedObjectId).not.toBeNull();
+    store().undo();
+    expect(store().selectedObjectId).toBeNull();
+  });
+
+  it('keeps at most HISTORY_LIMIT steps', () => {
+    for (let i = 0; i < HISTORY_LIMIT + 20; i++) store().setFloorSize(7 + (i % 2), 5);
+    expect(store().past).toHaveLength(HISTORY_LIMIT);
+  });
+
+  it('never brings back objects of a deleted model, and records no step for removing them', () => {
+    store().addObject('kept');
+    store().addObject('deleted');
+    const steps = store().past.length;
+    store().removeObjectsByModel('deleted');
+    expect(store().past).toHaveLength(steps);
+    store().undo();
+    store().undo();
+    store().redo();
+    for (const scene of [store().scene, ...store().past, ...store().future]) {
+      expect(scene?.objects.some((o) => o.modelId === 'deleted')).toBe(false);
+    }
   });
 });

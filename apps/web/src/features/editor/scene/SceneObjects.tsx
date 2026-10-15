@@ -111,6 +111,8 @@ function PlacedObject({ object, model, selected, onSelect }: PlacedObjectProps) 
   const transformMode = useEditorStore((s) => s.transformMode);
   const snapEnabled = useEditorStore((s) => s.snapEnabled);
   const updateObject = useEditorStore((s) => s.updateObject);
+  const beginGesture = useEditorStore((s) => s.beginGesture);
+  const endGesture = useEditorStore((s) => s.endGesture);
 
   // Gizmo drags write straight back to the store, so the properties panel updates live.
   function handleGizmoChange() {
@@ -164,8 +166,15 @@ function PlacedObject({ object, model, selected, onSelect }: PlacedObjectProps) 
           rotationSnap={snapEnabled ? SNAP_ROTATE : null}
           size={0.8}
           onObjectChange={handleGizmoChange}
-          onMouseDown={() => markGizmoInteraction()}
-          onMouseUp={() => markGizmoInteraction()}
+          // One drag = one undo step.
+          onMouseDown={() => {
+            markGizmoInteraction();
+            beginGesture();
+          }}
+          onMouseUp={() => {
+            markGizmoInteraction();
+            endGesture();
+          }}
         />
       )}
     </>

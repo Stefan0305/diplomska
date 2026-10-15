@@ -1,5 +1,6 @@
-import { Magnet, Move, RotateCw } from 'lucide-react';
+import { Magnet, Move, Redo2, RotateCw, Undo2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { Toggle } from '@/components/ui/toggle';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -32,6 +33,10 @@ export function TransformToolbar() {
   const snapEnabled = useEditorStore((s) => s.snapEnabled);
   const setSnapEnabled = useEditorStore((s) => s.setSnapEnabled);
   const hasSelection = useEditorStore((s) => s.selectedObjectId !== null);
+  const canUndo = useEditorStore((s) => s.past.length > 0);
+  const canRedo = useEditorStore((s) => s.future.length > 0);
+  const undo = useEditorStore((s) => s.undo);
+  const redo = useEditorStore((s) => s.redo);
 
   return (
     <div className="pointer-events-none absolute inset-x-3 top-3 flex items-start justify-between gap-3">
@@ -66,6 +71,34 @@ export function TransformToolbar() {
             <Magnet />
             Snap
           </Toggle>
+        </Hint>
+        <div className="mx-1 h-5 w-px bg-border" />
+        {/* A disabled button gets no pointer events, so the tooltip sits on a wrapper span. */}
+        <Hint label="Undo" shortcut="Ctrl+Z">
+          <span>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={undo}
+              disabled={!canUndo}
+              aria-label="Undo"
+            >
+              <Undo2 />
+            </Button>
+          </span>
+        </Hint>
+        <Hint label="Redo" shortcut="Ctrl+Shift+Z">
+          <span>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={redo}
+              disabled={!canRedo}
+              aria-label="Redo"
+            >
+              <Redo2 />
+            </Button>
+          </span>
         </Hint>
       </div>
 

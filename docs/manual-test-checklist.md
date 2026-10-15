@@ -52,6 +52,17 @@ Place the **Reference cube (1 m)** and the **Test table**.
 - [ ] **Esc**, clicking the floor and clicking the sky all deselect
 - [ ] While typing in a number field, **Delete**, **G**, **R**, **S** edit the text and do not affect the scene
 
+### Undo / redo (added after the first test pass)
+
+- [ ] Move an object with one long gizmo drag, then **Ctrl+Z** → it jumps back to where the drag started (one step, not many small ones)
+- [ ] Undo several different edits in a row (resize, rotate, add a wall, change floor size or material) → each **Ctrl+Z** undoes one; **Ctrl+Shift+Z** and **Ctrl+Y** redo them
+- [ ] The undo/redo buttons in the top toolbar do the same and are greyed out when there is nothing to undo or redo
+- [ ] Place an object, then **Ctrl+Z** → the object disappears and is no longer selected; **Ctrl+Shift+Z** brings it back
+- [ ] Undo, then make a new edit → redo is no longer possible
+- [ ] After an undo the badge shows "Unsaved changes" and autosave saves the restored state (check by reloading)
+- [ ] While typing in a number field, **Ctrl+Z** undoes the typed text, not the scene
+- [ ] Reloading the page or opening another project starts with an empty history
+
 ## Sprint 6: saving and loading (FR7)
 
 - [ ] Make an edit → badge says "Unsaved changes"; about 5 s later "Saving…" then "Saved" (autosave)

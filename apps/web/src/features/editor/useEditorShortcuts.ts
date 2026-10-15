@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { commandForKey, isTypingTarget } from './shortcuts';
 import { useEditorStore } from './store';
 
-/** G move · R rotate · S snap · Del delete · Ctrl+D duplicate · Esc deselect · Ctrl+S save · ? help. */
+/** G move · R rotate · S snap · Del delete · Ctrl+D duplicate · Esc deselect · Ctrl+S save · Ctrl+Z undo · Ctrl+Shift+Z / Ctrl+Y redo · ? help. */
 interface ShortcutHandlers {
   onSave: () => void;
   onHelp: () => void;
@@ -55,6 +55,12 @@ export function useEditorShortcuts(handlers: ShortcutHandlers) {
           break;
         case 'deselect':
           state.clearSelection();
+          break;
+        case 'undo':
+          state.undo();
+          break;
+        case 'redo':
+          state.redo();
           break;
         case 'help':
           handlersRef.current.onHelp();
