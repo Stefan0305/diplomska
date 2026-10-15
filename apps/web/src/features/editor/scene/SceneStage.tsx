@@ -1,7 +1,8 @@
 import type { Environment, SceneObject } from '@app/shared';
-import { GizmoHelper, GizmoViewport, Grid, OrbitControls } from '@react-three/drei';
+import { GizmoHelper, GizmoViewport, Grid, OrbitControls, Stats } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { CAPTURE_GRID, CaptureBridge } from '../capture';
@@ -80,6 +81,9 @@ interface SceneStageProps {
  */
 export function SceneStage({ environment, objects, onPointerMissed, children }: SceneStageProps) {
   const look = environmentLooks[environment.type];
+  // `?fps` in the URL shows an fps counter, for the performance check (NFR2).
+  const [searchParams] = useSearchParams();
+  const showFps = searchParams.has('fps');
   return (
     <Canvas
       camera={{ position: [8, 7, 9], fov: 45, near: 0.1, far: 1000 }}
@@ -116,6 +120,8 @@ export function SceneStage({ environment, objects, onPointerMissed, children }: 
       />
       <CameraRig environment={environment} objects={objects} />
       <CaptureBridge />
+
+      {showFps && <Stats />}
 
       <GizmoHelper alignment="bottom-right" margin={[64, 64]}>
         <GizmoViewport labelColor="white" axisHeadScale={0.9} />

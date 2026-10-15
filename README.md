@@ -4,6 +4,7 @@ Web-based 3D space planning tool (bachelor's thesis project). Users create a vir
 place 3D models scaled to real-world dimensions, save their workspaces and present them to clients.
 
 - Project plan: [`plan.md`](plan.md) · Sprint details: [`docs/sprints/`](docs/sprints/)
+- Manual tests: [`docs/manual-test-checklist.md`](docs/manual-test-checklist.md) · Defence walkthrough: [`docs/demo-script.md`](docs/demo-script.md)
 - Runs entirely locally: SQLite database file, uploads in a local folder, no Docker, no cloud services.
 
 ## Requirements
@@ -37,6 +38,14 @@ npm run dev
 - API: <http://localhost:3001> (the web app reaches it through the Vite proxy at `/api` and `/files`)
 
 The home page shows a **System status** card. If API and Database both show `ok`, everything is wired up.
+
+### Demo account
+
+`npm run db:seed` creates **`demo@example.com` / `demo1234`** with three example projects: "Living room" (interior), "Garden" (exterior) and "Performance test (50 objects)". Re-seeding resets the demo password and re-creates missing example projects, but never overwrites existing ones.
+
+### Measuring fps
+
+Add `?fps` to an editor or viewer URL (for example `http://localhost:5173/projects/<id>?fps`) to show an fps counter in the top-left corner of the 3D view.
 
 ### Demo / presentation mode
 
@@ -96,6 +105,7 @@ apps/api/          Express API, Prisma schema + migrations + seed, SQLite file
   uploads/         user uploads and thumbnails (git-ignored, created automatically)
 packages/shared/   Zod schemas and types shared by web and API (imported as @app/shared)
 docs/sprints/      one plan file per sprint
+docs/              manual test checklist, demo script
 ```
 
 ## Environment variables (`apps/api/.env`)

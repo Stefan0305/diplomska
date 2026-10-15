@@ -42,7 +42,7 @@ Keep it simple. No photorealistic rendering, post-processing, animation, physics
 - **Data model:** `User`, `Project` (owner, name, scene, optional shareToken and thumbnail), `Model` (an `ownerId` of null means a built-in model; also stores filePath and category; no dimensions).
 - **File storage:** user uploads and thumbnails go to `apps/api/uploads/` (git-ignored, configurable through `UPLOAD_DIR`). Built-in models are committed in `apps/api/assets/models/`. Both are served statically under `/files`. The Draco decoder is served locally from `apps/web/public/draco/` (no CDN), so the demo works offline. The database stores only the relative file path. Do not add S3 or other cloud storage.
 - **Routing / origin:** all API routes are under `/api`. In development, Vite proxies `/api` and `/files` to the API; for the demo, the API serves the built web app. The browser always sees one origin, so the JWT cookie works with no CORS setup.
-- **Seed:** `apps/api/prisma/seed.ts` exists from Sprint 0 and grows each sprint (built-in models, demo user, example projects).
+- **Seed:** `apps/api/prisma/seed.ts` is idempotent. It syncs the built-in models, upserts the demo account `demo@example.com` / `demo1234` (the password is reset on every run), and creates missing example projects from `prisma/demo-scenes.ts` (Living room, Garden, a 50-object performance scene) without overwriting existing ones. The demo scenes are validated by `sceneSchema` and unit tested.
 - **Sharing:** `/view/:shareToken` opens a read-only viewer: orbit controls, camera presets and PNG export, with no editing.
 
 ## Commands

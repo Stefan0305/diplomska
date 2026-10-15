@@ -81,7 +81,7 @@ The work is done in short, iterative sprints. A sprint ends when its acceptance 
 | [5](docs/sprints/sprint-5-transform-dimensions.md) | Transform + dimensions  | Move/rotate/scale gizmo, snapping, real-world sizing in metres                                             | 2–3 days | Implemented |
 | [6](docs/sprints/sprint-6-persistence.md)          | Persistence             | Save/load workspaces, autosave, thumbnails (**MVP complete**)                                              | 2 days   | Implemented |
 | [7](docs/sprints/sprint-7-presentation.md)         | Presentation + polish   | Share link viewer, PNG export, camera presets, built-in models                                             | 2–3 days | Implemented |
-| [8](docs/sprints/sprint-8-hardening.md)            | Hardening + demo prep   | Bug fixing, performance, manual test pass, demo data, demo script                                          | 2–3 days | Planned     |
+| [8](docs/sprints/sprint-8-hardening.md)            | Hardening + demo prep   | Bug fixing, performance, manual test pass, demo data, demo script                                          | 2–3 days | Implemented |
 
 ## 5. Testing
 
@@ -107,6 +107,10 @@ Known limitations (deliberate simplifications):
 - Rotation is around the vertical axis only, and scaling is always proportional.
 - Only GLB is supported as a model format.
 - Uploaded files are served without access control, which is acceptable for a local demo.
+- There is no undo/redo (it was optional in Sprint 5), and objects can overlap (there is no collision detection).
+- A share link always shows the last saved version, and one person edits a project at a time (no real-time collaboration). If two tabs edit the same project, the last save wins.
+- Thumbnails are captured only when saving from the editor, so the seeded example projects have none until they are opened and saved once.
+- Camera presets frame objects by their position plus a fixed margin, not by their exact size.
 
 Ideas for the thesis conclusion: cloud storage and hosting, a larger model catalogue, a measurement tool, importing 2D floor plans, collaboration, an AR preview.
 
