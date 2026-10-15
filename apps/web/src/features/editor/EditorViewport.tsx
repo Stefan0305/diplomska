@@ -1,21 +1,18 @@
-import { GizmoHelper, GizmoViewport, Grid, OrbitControls } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
 import { useModelMap } from '@/features/models/hooks';
-import { CAPTURE_GRID, CaptureBridge } from './capture';
 import { environmentLooks } from './materials';
 import { Floor } from './scene/Floor';
 import { isGizmoClick } from './scene/gizmoGuard';
 import { SceneObjects } from './scene/SceneObjects';
+import { SceneStage } from './scene/SceneStage';
 import { Walls } from './scene/Walls';
 import { useEditorStore } from './store';
 
-/**
- * The 3D view, rendered from the editor store. 1 unit = 1 metre; the floor is the XZ plane
- * at y = 0, centred on the origin.
- */
+const NO_OBJECTS: never[] = [];
+
+/** The editor's 3D view, rendered from the editor store, with selection and gizmos. */
 export function EditorViewport() {
   const environment = useEditorStore((s) => s.scene?.environment);
-  const objects = useEditorStore((s) => s.scene?.objects);
+  const objects = useEditorStore((s) => s.scene?.objects ?? NO_OBJECTS);
   const selectedWallId = useEditorStore((s) => s.selectedWallId);
   const selectedObjectId = useEditorStore((s) => s.selectedObjectId);
   const selectWall = useEditorStore((s) => s.selectWall);
@@ -33,64 +30,23 @@ export function EditorViewport() {
   };
 
   if (!environment) return null;
-  const look = environmentLooks[environment.type];
 
   return (
-    <Canvas
-      camera={{ position: [8, 7, 9], fov: 45, near: 0.1, far: 1000 }}
-      dpr={[1, 2]}
-      // A click that hits nothing (the sky) clears the selection.
-      onPointerMissed={deselect}
-    >
-      <color attach="background" args={[look.background]} />
-      <ambientLight intensity={look.ambient} />
-      <directionalLight position={[10, 15, 8]} intensity={look.sun} />
-
+    // A click that hits nothing (the sky) clears the selection.
+    <SceneStage environment={environment} objects={objects} onPointerMissed={deselect}>
       <Floor environment={environment} onClick={deselect} />
       <Walls
         walls={environment.walls}
-        color={look.wallColor}
+        color={environmentLooks[environment.type].wallColor}
         selectedWallId={selectedWallId}
         onSelect={pickWall}
       />
       <SceneObjects
-        objects={objects ?? []}
+        objects={objects}
         models={models}
         selectedObjectId={selectedObjectId}
         onSelect={selectObject}
       />
-
-      {/* Metre grid drawn just above the floor so it stays visible on every material. */}
-      <Grid
-        userData={{ [CAPTURE_GRID]: true }}
-        position={[0, 0.002, 0]}
-        infiniteGrid
-        cellSize={0.5}
-        sectionSize={5}
-        cellColor="#64748b"
-        sectionColor="#334155"
-        cellThickness={0.6}
-        sectionThickness={1}
-        fadeDistance={80}
-        followCamera={false}
-      />
-
-      <OrbitControls
-        makeDefault
-        target={[0, 0, 0]}
-        // Pan along the floor plane instead of the screen plane, so the orbit target stays at
-        // floor level; with the polar limit the camera can never go below the floor.
-        screenSpacePanning={false}
-        maxPolarAngle={Math.PI / 2 - 0.05}
-        minDistance={1}
-        maxDistance={250}
-      />
-
-      <CaptureBridge />
-
-      <GizmoHelper alignment="bottom-right" margin={[64, 64]}>
-        <GizmoViewport labelColor="white" axisHeadScale={0.9} />
-      </GizmoHelper>
-    </Canvas>
+    </SceneStage>
   );
 }

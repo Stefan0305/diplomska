@@ -12,7 +12,7 @@
     "db:seed": "prisma db seed",
     "postinstall": "prisma generate",
     "postdb:migrate": "prisma generate",
-    "models:generate": "node --import tsx scripts/generate-test-models.ts",
+    "models:generate": "node --import tsx scripts/generate-models.ts",
     "models:check": "node --import tsx scripts/check-models.ts"
   },
   "dependencies": {

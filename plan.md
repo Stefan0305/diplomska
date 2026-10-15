@@ -80,7 +80,7 @@ The work is done in short, iterative sprints. A sprint ends when its acceptance 
 | [4](docs/sprints/sprint-4-models.md)               | Models                  | Upload, library panel, GLB loading, placing models on the floor                                            | 2–3 days | Done        |
 | [5](docs/sprints/sprint-5-transform-dimensions.md) | Transform + dimensions  | Move/rotate/scale gizmo, snapping, real-world sizing in metres                                             | 2–3 days | Implemented |
 | [6](docs/sprints/sprint-6-persistence.md)          | Persistence             | Save/load workspaces, autosave, thumbnails (**MVP complete**)                                              | 2 days   | Implemented |
-| [7](docs/sprints/sprint-7-presentation.md)         | Presentation + polish   | Share link viewer, PNG export, camera presets, built-in models                                             | 2–3 days | Planned     |
+| [7](docs/sprints/sprint-7-presentation.md)         | Presentation + polish   | Share link viewer, PNG export, camera presets, built-in models                                             | 2–3 days | Implemented |
 | [8](docs/sprints/sprint-8-hardening.md)            | Hardening + demo prep   | Bug fixing, performance, manual test pass, demo data, demo script                                          | 2–3 days | Planned     |
 
 ## 5. Testing

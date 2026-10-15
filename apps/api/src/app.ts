@@ -9,6 +9,7 @@ import { toErrorResponse } from './errors';
 import type { PrismaClient } from './generated/prisma/client';
 import { createModelsRouter } from './models/routes';
 import { createProjectsRouter } from './projects/routes';
+import { createShareRouter } from './share/routes';
 
 export function createApp(config: Config, prisma: PrismaClient) {
   const app = express();
@@ -20,6 +21,7 @@ export function createApp(config: Config, prisma: PrismaClient) {
   api.use('/auth', createAuthRouter(prisma, config.jwtSecret));
   api.use('/projects', createProjectsRouter(prisma, config.jwtSecret, config.uploadDir));
   api.use('/models', createModelsRouter(prisma, config.jwtSecret, config.uploadDir));
+  api.use('/share', createShareRouter(prisma));
 
   api.get('/health', async (_req, res) => {
     let database: HealthResponse['database'] = 'ok';

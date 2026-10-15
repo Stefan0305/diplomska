@@ -1,6 +1,7 @@
 import type { ProjectSummary } from '@app/shared';
-import { Box, Copy, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Box, Copy, Link2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Link } from 'react-router';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,7 +23,13 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onRename, onDuplicate, onDelete }: ProjectCardProps) {
   return (
     <Card className="group relative gap-0 overflow-hidden pt-0 transition-shadow hover:shadow-md">
-      <div className="flex aspect-video items-center justify-center bg-muted">
+      <div className="relative flex aspect-video items-center justify-center bg-muted">
+        {project.shareToken && (
+          <Badge variant="secondary" className="absolute top-2 left-2 gap-1 shadow-sm">
+            <Link2 />
+            Shared
+          </Badge>
+        )}
         {project.thumbnailUrl ? (
           <img src={project.thumbnailUrl} alt="" className="size-full object-cover" />
         ) : (

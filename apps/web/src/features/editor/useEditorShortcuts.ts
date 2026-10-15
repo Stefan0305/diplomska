@@ -2,12 +2,17 @@ import { useEffect, useRef } from 'react';
 import { commandForKey, isTypingTarget } from './shortcuts';
 import { useEditorStore } from './store';
 
-/** G move · R rotate · S snap · Del delete · Ctrl+D duplicate · Esc deselect · Ctrl+S save. */
-export function useEditorShortcuts({ onSave }: { onSave: () => void }) {
-  // The latest callback, so the listener is registered only once.
-  const saveRef = useRef(onSave);
+/** G move · R rotate · S snap · Del delete · Ctrl+D duplicate · Esc deselect · Ctrl+S save · ? help. */
+interface ShortcutHandlers {
+  onSave: () => void;
+  onHelp: () => void;
+}
+
+export function useEditorShortcuts(handlers: ShortcutHandlers) {
+  // The latest callbacks, so the listener is registered only once.
+  const handlersRef = useRef(handlers);
   useEffect(() => {
-    saveRef.current = onSave;
+    handlersRef.current = handlers;
   });
 
   useEffect(() => {
@@ -20,7 +25,7 @@ export function useEditorShortcuts({ onSave }: { onSave: () => void }) {
         event.preventDefault();
         // Blurring commits a number field that is being edited, so the save includes it.
         if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-        saveRef.current();
+        handlersRef.current.onSave();
         return;
       }
       if (isTypingTarget(event.target)) return;
@@ -50,6 +55,9 @@ export function useEditorShortcuts({ onSave }: { onSave: () => void }) {
           break;
         case 'deselect':
           state.clearSelection();
+          break;
+        case 'help':
+          handlersRef.current.onHelp();
           break;
       }
       event.preventDefault(); // e.g. Ctrl+D would otherwise bookmark the page

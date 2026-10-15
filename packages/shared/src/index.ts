@@ -6,3 +6,4 @@ export * from './model';
 export * from './project';
 export * from './scene';
 export * from './sizing';
+export * from './share';

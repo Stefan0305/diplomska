@@ -1,5 +1,120 @@
 [
   {
+    "file": "sofa.glb",
+    "name": "Sofa",
+    "category": "furniture"
+  },
+  {
+    "file": "armchair.glb",
+    "name": "Armchair",
+    "category": "furniture"
+  },
+  {
+    "file": "dining-chair.glb",
+    "name": "Dining chair",
+    "category": "furniture"
+  },
+  {
+    "file": "dining-table.glb",
+    "name": "Dining table",
+    "category": "furniture"
+  },
+  {
+    "file": "coffee-table.glb",
+    "name": "Coffee table",
+    "category": "furniture"
+  },
+  {
+    "file": "double-bed.glb",
+    "name": "Double bed",
+    "category": "furniture"
+  },
+  {
+    "file": "wardrobe.glb",
+    "name": "Wardrobe",
+    "category": "furniture"
+  },
+  {
+    "file": "bookshelf.glb",
+    "name": "Bookshelf",
+    "category": "furniture"
+  },
+  {
+    "file": "tv-cabinet.glb",
+    "name": "TV cabinet",
+    "category": "furniture"
+  },
+  {
+    "file": "desk.glb",
+    "name": "Desk",
+    "category": "furniture"
+  },
+  {
+    "file": "floor-lamp.glb",
+    "name": "Floor lamp",
+    "category": "decor"
+  },
+  {
+    "file": "rug.glb",
+    "name": "Rug",
+    "category": "decor"
+  },
+  {
+    "file": "potted-plant.glb",
+    "name": "Potted plant",
+    "category": "plants"
+  },
+  {
+    "file": "shrub.glb",
+    "name": "Shrub",
+    "category": "plants"
+  },
+  {
+    "file": "hedge.glb",
+    "name": "Hedge",
+    "category": "plants"
+  },
+  {
+    "file": "planter.glb",
+    "name": "Terracotta planter",
+    "category": "plants"
+  },
+  {
+    "file": "deciduous-tree.glb",
+    "name": "Deciduous tree",
+    "category": "plants"
+  },
+  {
+    "file": "pine-tree.glb",
+    "name": "Pine tree",
+    "category": "plants"
+  },
+  {
+    "file": "garden-bench.glb",
+    "name": "Garden bench",
+    "category": "outdoor"
+  },
+  {
+    "file": "raised-bed.glb",
+    "name": "Raised garden bed",
+    "category": "outdoor"
+  },
+  {
+    "file": "parasol.glb",
+    "name": "Parasol",
+    "category": "outdoor"
+  },
+  {
+    "file": "fence-panel.glb",
+    "name": "Fence panel",
+    "category": "outdoor"
+  },
+  {
+    "file": "stepping-stone.glb",
+    "name": "Stepping stone",
+    "category": "outdoor"
+  },
+  {
     "file": "test-table.glb",
     "name": "Test table",
     "category": "furniture"

@@ -7,13 +7,15 @@ import { RedirectIfAuthenticated, RequireAuth } from '@/features/auth/routes';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
-import { PlaceholderPage } from '@/pages/PlaceholderPage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 
-// The editor pulls in three.js; load it only when a project is opened.
+// The editor and the viewer pull in three.js; load them only when needed.
 const EditorPage = lazy(() =>
   import('@/pages/EditorPage').then((module) => ({ default: module.EditorPage })),
+);
+const ViewerPage = lazy(() =>
+  import('@/pages/ViewerPage').then((module) => ({ default: module.ViewerPage })),
 );
 
 /** Regular pages: centred, scrolling content. */
@@ -67,7 +69,7 @@ export function App() {
             <Route path="projects/:id" element={<EditorPage />} />
           </Route>
           {/* Public: clients open shared designs without an account. */}
-          <Route path="view/:token" element={<PlaceholderPage title="Viewer" sprint={7} />} />
+          <Route path="view/:token" element={<ViewerPage />} />
         </Route>
       </Routes>
       <Toaster position="bottom-right" />

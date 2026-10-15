@@ -1,4 +1,4 @@
-import type { RenameProjectInput } from '@app/shared';
+import type { ProjectDetail, ProjectSummary, RenameProjectInput } from '@app/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createProject,
@@ -6,13 +6,17 @@ import {
   duplicateProject,
   fetchProject,
   fetchProjects,
+  fetchSharedProject,
   renameProject,
+  shareProject,
+  unshareProject,
 } from './api';
 
 export const projectKeys = {
   all: ['projects'] as const,
   list: () => [...projectKeys.all, 'list'] as const,
   detail: (id: string) => [...projectKeys.all, 'detail', id] as const,
+  shared: (token: string) => ['shared', token] as const,
 };
 
 export function useProjects() {
@@ -64,4 +68,31 @@ export function useDuplicateProject() {
 export function useDeleteProject() {
   const invalidate = useInvalidateProjects();
   return useMutation({ mutationFn: deleteProject, onSuccess: invalidate });
+}
+
+/**
+ * Turn the share link on or off. The open editor's cached project is patched in place instead
+ * of refetched, so the scene being edited is never replaced.
+ */
+export function useSetSharing() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, shared }: { id: string; shared: boolean }) =>
+      shared ? shareProject(id) : unshareProject(id),
+    onSuccess: (summary: ProjectSummary) => {
+      queryClient.setQueryData<ProjectDetail>(projectKeys.detail(summary.id), (old) =>
+        old ? { ...old, shareToken: summary.shareToken } : old,
+      );
+      void queryClient.invalidateQueries({ queryKey: projectKeys.list() });
+    },
+  });
+}
+
+/** Public: a shared design for the viewer (no login needed). */
+export function useSharedProject(token: string) {
+  return useQuery({
+    queryKey: projectKeys.shared(token),
+    queryFn: () => fetchSharedProject(token),
+    retry: false,
+  });
 }

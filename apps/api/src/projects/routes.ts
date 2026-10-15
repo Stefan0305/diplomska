@@ -20,6 +20,7 @@ import {
   toProjectDetail,
   toProjectSummary,
 } from './mappers';
+import { generateShareToken } from '../share/token';
 import { decodeThumbnail, removeThumbnail, writeThumbnail } from './thumbnails';
 
 export function createProjectsRouter(
@@ -100,6 +101,30 @@ export function createProjectsRouter(
       if (thumbnailPath) await removeThumbnail(uploadDir, thumbnailPath);
       throw err;
     }
+  });
+
+  /** Turn on the read-only share link; an existing link is kept, so re-sharing never breaks it. */
+  router.post('/:id/share', async (req, res) => {
+    const project = await findOwnedProject(req);
+    const updated = project.shareToken
+      ? project
+      : await prisma.project.update({
+          where: { id: project.id },
+          data: { shareToken: generateShareToken() },
+        });
+    const body: { project: ProjectSummary } = { project: toProjectSummary(updated) };
+    res.json(body);
+  });
+
+  /** Turn sharing off: the old link stops working, and sharing again creates a new one. */
+  router.delete('/:id/share', async (req, res) => {
+    const project = await findOwnedProject(req);
+    const updated = await prisma.project.update({
+      where: { id: project.id },
+      data: { shareToken: null },
+    });
+    const body: { project: ProjectSummary } = { project: toProjectSummary(updated) };
+    res.json(body);
   });
 
   router.post('/:id/duplicate', async (req, res) => {

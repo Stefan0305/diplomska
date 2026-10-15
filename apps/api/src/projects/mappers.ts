@@ -36,6 +36,7 @@ export function toProjectSummary(project: Project): ProjectSummary {
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
     thumbnailUrl: project.thumbnail ? `/files/uploads/${project.thumbnail}` : null,
+    shareToken: project.shareToken,
   };
 }
 

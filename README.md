@@ -73,7 +73,7 @@ Create a migration after changing `apps/api/prisma/schema.prisma`:
 npm run db:migrate -- --name describe_the_change
 ```
 
-Regenerate or check the built-in test models (after changing `apps/api/scripts/generate-test-models.ts`):
+Regenerate or check the built-in models (after changing `apps/api/scripts/generate-models.ts` or `catalog.ts`):
 
 ```bash
 npm run models:generate -w @app/api   # writes apps/api/assets/models/*.glb + models.json

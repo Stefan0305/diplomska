@@ -102,7 +102,7 @@ interface PlacedObjectProps {
   object: SceneObject;
   model: ModelInfo | undefined;
   selected: boolean;
-  onSelect: (id: string) => void;
+  onSelect?: (id: string) => void;
 }
 
 function PlacedObject({ object, model, selected, onSelect }: PlacedObjectProps) {
@@ -131,10 +131,13 @@ function PlacedObject({ object, model, selected, onSelect }: PlacedObjectProps) 
         position={object.position as Vec3}
         rotation-y={object.rotationY}
         scale={object.scale}
-        onClick={(event: ThreeEvent<MouseEvent>) => {
-          event.stopPropagation();
-          if (!isGizmoClick()) onSelect(object.id);
-        }}
+        onClick={
+          onSelect &&
+          ((event: ThreeEvent<MouseEvent>) => {
+            event.stopPropagation();
+            if (!isGizmoClick()) onSelect(object.id);
+          })
+        }
       >
         {model ? (
           <ModelErrorBoundary>
@@ -174,7 +177,8 @@ interface SceneObjectsProps {
   /** undefined while the model library is still loading. */
   models: Map<string, ModelInfo> | undefined;
   selectedObjectId: string | null;
-  onSelect: (id: string) => void;
+  /** Omitted in the read-only viewer: nothing can be selected there. */
+  onSelect?: (id: string) => void;
 }
 
 export function SceneObjects({ objects, models, selectedObjectId, onSelect }: SceneObjectsProps) {

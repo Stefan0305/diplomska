@@ -34,6 +34,10 @@ describe('commandForKey', () => {
     expect(commandForKey(key('D', { metaKey: true }))).toBe('duplicate');
   });
 
+  it('maps ? (Shift+/) to help', () => {
+    expect(commandForKey(key('?', { shiftKey: true }))).toBe('help');
+  });
+
   it('leaves other browser shortcuts alone', () => {
     expect(commandForKey(key('r', { ctrlKey: true }))).toBeNull(); // reload
     expect(commandForKey(key('g', { altKey: true }))).toBeNull();

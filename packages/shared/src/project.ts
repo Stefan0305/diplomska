@@ -20,6 +20,8 @@ export const projectSummarySchema = z.object({
   updatedAt: z.iso.datetime(),
   /** URL of the saved thumbnail image (Sprint 6), or null. */
   thumbnailUrl: z.string().nullable(),
+  /** Set while the project is shared through a read-only link (Sprint 7). */
+  shareToken: z.string().nullable(),
 });
 
 /** What the editor needs: the summary plus the full scene. */

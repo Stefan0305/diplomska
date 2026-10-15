@@ -5,7 +5,8 @@ interface WallsProps {
   walls: Wall[];
   color: string;
   selectedWallId: string | null;
-  onSelect: (id: string) => void;
+  /** Omitted in the read-only viewer. */
+  onSelect?: (id: string) => void;
 }
 
 /** Each wall is a plain box between its start and end points, standing on the floor. */
@@ -18,10 +19,13 @@ export function Walls({ walls, color, selectedWallId, onSelect }: WallsProps) {
         key={wall.id}
         position={position}
         rotation-y={rotationY}
-        onClick={(event) => {
-          event.stopPropagation();
-          onSelect(wall.id);
-        }}
+        onClick={
+          onSelect &&
+          ((event) => {
+            event.stopPropagation();
+            onSelect(wall.id);
+          })
+        }
       >
         <boxGeometry args={size} />
         <meshStandardMaterial
