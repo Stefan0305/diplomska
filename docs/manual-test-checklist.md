@@ -59,13 +59,13 @@ Place the **Reference cube (1 m)** and the **Test table**.
 - [ ] The undo/redo buttons in the top toolbar do the same and are greyed out when there is nothing to undo or redo
 - [ ] Place an object, then **Ctrl+Z** → the object disappears and is no longer selected; **Ctrl+Shift+Z** brings it back
 - [ ] Undo, then make a new edit → redo is no longer possible
-- [ ] After an undo the badge shows "Unsaved changes" and autosave saves the restored state (check by reloading)
+- [ ] After an undo the badge shows "Pending changes" and autosave saves the restored state (check by reloading)
 - [ ] While typing in a number field, **Ctrl+Z** undoes the typed text, not the scene
 - [ ] Reloading the page or opening another project starts with an empty history
 
 ## Sprint 6: saving and loading (FR7)
 
-- [ ] Make an edit → badge says "Unsaved changes"; about 5 s later "Saving…" then "Saved" (autosave)
+- [ ] Make an edit → badge says "Pending changes" (hover it: the hint names the 5 s delay); about 5 s later "Saving…" then "Saved" (autosave)
 - [ ] Press **Ctrl+S** (or the Save button) → "Project saved" toast
 - [ ] Type a value in a number field and press **Ctrl+S** without leaving the field → the typed value is saved
 - [ ] Reload the page → environment, walls, objects, positions, rotations and sizes are exactly as before

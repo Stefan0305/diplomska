@@ -35,7 +35,7 @@
 
 ## 5. Saving (30 s) — FR7
 
-1. Point at the save badge: "Unsaved changes" → "Saved" after a few seconds (autosave), or **Ctrl+S**.
+1. Point at the save badge: "Pending changes" → "Saved" after a few seconds (autosave), or **Ctrl+S**.
 2. Reload the page: everything is exactly where it was. Back on the dashboard, the thumbnail shows the new design.
 
 ## 6. Presenting to a client (2 min) — FR8, FR9
