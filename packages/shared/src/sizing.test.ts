@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { OBJECT_SCALE_MAX, OBJECT_SCALE_MIN } from './scene';
+import { OBJECT_ELEVATION_MAX, OBJECT_SCALE_MAX, OBJECT_SCALE_MIN } from './scene';
 import {
+  clampElevation,
   clampScale,
   normalizeAngle,
   scaledSize,
@@ -58,6 +59,14 @@ describe('scaledSize / clampScale', () => {
     expect(clampScale(0)).toBe(OBJECT_SCALE_MIN);
     expect(clampScale(5000)).toBe(OBJECT_SCALE_MAX);
     expect(clampScale(2)).toBe(2);
+  });
+});
+
+describe('clampElevation', () => {
+  it('keeps the base between the floor and the limit', () => {
+    expect(clampElevation(1.2)).toBe(1.2);
+    expect(clampElevation(-0.5)).toBe(0);
+    expect(clampElevation(1000)).toBe(OBJECT_ELEVATION_MAX);
   });
 });
 

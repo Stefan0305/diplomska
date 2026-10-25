@@ -103,7 +103,7 @@ The work is done in short, iterative sprints. A sprint ends when its acceptance 
 
 Known limitations (deliberate simplifications):
 
-- Objects always stand on the floor (y = 0), so nothing can be stacked, such as a vase on a table, and nothing can be mounted on a wall.
+- Objects can be raised off the floor (for wall-mounted items or a vase on a table), but the height is set by hand: there is no automatic snapping onto surfaces or walls, and nothing goes below the floor.
 - Rotation is around the vertical axis only, and scaling is always proportional.
 - Only GLB is supported as a model format.
 - Uploaded files are served without access control, which is acceptable for a local demo.

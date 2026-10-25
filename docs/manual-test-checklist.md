@@ -43,7 +43,7 @@ Sprints 0–4 already passed their manual tests, so a quick regression pass is e
 Place the **Reference cube (1 m)** and the **Test table**.
 
 - [ ] Click the cube → blue outline, gizmo, properties panel showing **1 × 1 × 1 m**
-- [ ] Drag the move arrows → the cube slides along the floor in 0.1 m steps; X/Z update live; the camera does not orbit while dragging; releasing does not deselect
+- [ ] Drag the move arrows → the cube slides along the floor (red/blue arrows) in 0.1 m steps; X/Z update live; the camera does not orbit while dragging; releasing does not deselect
 - [ ] Press **R** and drag the ring → rotates in 15° steps; past 90° the angle in the panel stays correct
 - [ ] Press **S** (snap off) → movement and rotation are smooth; press **S** again
 - [ ] Table shows 1.2 × 0.75 × 0.8 m; type **2** in Width → 2 × 1.25 × 1.33 m (proportional); **Reset to original size** restores it
@@ -51,6 +51,17 @@ Place the **Reference cube (1 m)** and the **Test table**.
 - [ ] **Ctrl+D** duplicates 0.5 m away and selects the copy; **Delete** removes it; the Duplicate/Delete buttons do the same
 - [ ] **Esc**, clicking the floor and clicking the sky all deselect
 - [ ] While typing in a number field, **Delete**, **G**, **R**, **S** edit the text and do not affect the scene
+
+### Vertical positioning (added after the first test pass)
+
+- [ ] Select an object → the move gizmo has a green **Y** arrow; dragging it lifts the object in 0.1 m steps and the panel's **Height (Y)** updates live
+- [ ] Dragging the Y arrow far down stops at the floor; the object never sinks below it
+- [ ] Type **1.5** in Height (Y) → the object floats 1.5 m up; place it against a wall (X/Z) like a wall shelf or picture
+- [ ] Type **-1** → the object goes to 0 with a notice; type **50** → kept at 20 m with a notice
+- [ ] **Put on the floor** sets the height to 0 (greyed out when already 0)
+- [ ] **Ctrl+D** on a raised object → the copy has the same height
+- [ ] **Ctrl+Z** after a Y drag puts the object back down; after save and reload the height is kept
+- [ ] Rotate mode (**R**) still shows only the vertical ring
 
 ### Undo / redo (added after the first test pass)
 

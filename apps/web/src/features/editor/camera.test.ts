@@ -26,6 +26,13 @@ describe('sceneBounds', () => {
     expect(bounds.max[0]).toBe(20.5);
     expect(bounds.min[2]).toBe(-5);
   });
+
+  it('grows upwards to include raised objects', () => {
+    const environment = createEnvironmentPreset('exterior', 10, 10);
+    const position: [number, number, number] = [0, 4, 0];
+    const object = { id: 'o', modelId: 'm', position, rotationY: 0, scale: 1 };
+    expect(sceneBounds(environment, [object]).max[1]).toBe(4.5);
+  });
 });
 
 describe('cameraForPreset', () => {

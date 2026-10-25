@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createProjectInputSchema } from './project';
 import { createDefaultScene } from './environment';
-import { SCENE_VERSION, sceneSchema } from './scene';
+import { OBJECT_ELEVATION_MAX, SCENE_VERSION, sceneSchema } from './scene';
 
 describe('createDefaultScene', () => {
   it('produces a valid scene: an empty 6 x 5 m room with four walls', () => {
@@ -41,6 +41,14 @@ describe('sceneSchema', () => {
     const withObject = (o: object) => ({ ...valid, objects: [{ ...object, ...o }] });
     expect(sceneSchema.safeParse(withObject({ position: [Infinity, 0, 0] })).success).toBe(false);
     expect(sceneSchema.safeParse(withObject({ scale: 0 })).success).toBe(false);
+  });
+
+  it('accepts a raised object (wall-mounted) but not one below the floor or too high', () => {
+    const object = { id: 'o1', modelId: 'm1', position: [0, 0, 0], rotationY: 0, scale: 1 };
+    const withY = (y: number) => ({ ...valid, objects: [{ ...object, position: [0, y, 0] }] });
+    expect(sceneSchema.safeParse(withY(1.5)).success).toBe(true);
+    expect(sceneSchema.safeParse(withY(-0.1)).success).toBe(false);
+    expect(sceneSchema.safeParse(withY(OBJECT_ELEVATION_MAX + 1)).success).toBe(false);
   });
 
   it('rejects an environment larger than 200 m', () => {

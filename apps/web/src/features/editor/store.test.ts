@@ -1,4 +1,9 @@
-import { createDefaultScene, sceneSchema, type ProjectDetail } from '@app/shared';
+import {
+  createDefaultScene,
+  OBJECT_ELEVATION_MAX,
+  sceneSchema,
+  type ProjectDetail,
+} from '@app/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DUPLICATE_OFFSET, HISTORY_LIMIT, MAX_OBJECTS, useEditorStore } from './store';
 
@@ -219,9 +224,16 @@ describe('editor store: transforms', () => {
   });
   const object = (objectId = id) => store().scene?.objects.find((o) => o.id === objectId);
 
-  it('moves an object and keeps it on the floor (y forced to 0)', () => {
+  it('moves an object, including up off the floor (e.g. wall-mounted)', () => {
     store().updateObject(id, { position: [1.5, 2, -3] });
-    expect(object()?.position).toEqual([1.5, 0, -3]);
+    expect(object()?.position).toEqual([1.5, 2, -3]);
+  });
+
+  it('never moves an object below the floor or above the elevation limit', () => {
+    store().updateObject(id, { position: [0, -1, 0] });
+    expect(object()?.position).toEqual([0, 0, 0]);
+    store().updateObject(id, { position: [0, 1000, 0] });
+    expect(object()?.position).toEqual([0, OBJECT_ELEVATION_MAX, 0]);
   });
 
   it('rotates around Y and wraps the angle into (-π, π]', () => {
@@ -260,13 +272,13 @@ describe('editor store: transforms', () => {
     expect(store().selectedObjectId).toBeNull();
   });
 
-  it('duplicates next to the original with the same rotation and scale, and selects the copy', () => {
-    store().updateObject(id, { position: [1, 0, 2], rotationY: 0.5, scale: 2 });
+  it('duplicates next to the original at the same height, rotation and scale, and selects it', () => {
+    store().updateObject(id, { position: [1, 1.4, 2], rotationY: 0.5, scale: 2 });
     const copyId = store().duplicateObject(id)!;
     expect(copyId).not.toBe(id);
     expect(object(copyId)).toMatchObject({
       modelId: 'model-1',
-      position: [1 + DUPLICATE_OFFSET, 0, 2 + DUPLICATE_OFFSET],
+      position: [1 + DUPLICATE_OFFSET, 1.4, 2 + DUPLICATE_OFFSET],
       rotationY: 0.5,
       scale: 2,
     });

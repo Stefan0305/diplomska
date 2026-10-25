@@ -1,4 +1,5 @@
 import {
+  clampElevation,
   clampScale,
   createEnvironmentPreset,
   normalizeAngle,
@@ -75,7 +76,7 @@ export interface EditorState {
   addObject: (modelId: string) => string | null;
   /** Remove every object that uses a model (after the model is deleted); returns the count. */
   removeObjectsByModel: (modelId: string) => number;
-  /** Move, rotate or rescale an object; values are kept valid (on the floor, angle wrapped). */
+  /** Move, rotate or rescale an object; values are kept valid (height clamped, angle wrapped). */
   updateObject: (id: string, patch: ObjectPatch) => void;
   removeObject: (id: string) => void;
   /** Copy an object next to the original and select the copy; returns its id. */
@@ -134,13 +135,14 @@ function sanitizeWallPatch(patch: WallPatch): WallPatch {
 }
 
 /**
- * Keep an object valid: it always stands on the floor (y = 0, a deliberate simplification),
- * its angle is wrapped into (-π, π] and its scale stays within the schema limits.
+ * Keep an object valid: its base stays between the floor and the elevation limit (never below
+ * y = 0), its angle is wrapped into (-π, π] and its scale stays within the schema limits.
  */
 function sanitizeObjectPatch(patch: ObjectPatch): ObjectPatch {
   const result: ObjectPatch = {};
   if (patch.position && patch.position.every(Number.isFinite)) {
-    result.position = [patch.position[0], 0, patch.position[2]];
+    const [x, y, z] = patch.position;
+    result.position = [x, clampElevation(y), z];
   }
   if (patch.rotationY !== undefined && Number.isFinite(patch.rotationY)) {
     result.rotationY = normalizeAngle(patch.rotationY);
@@ -298,11 +300,12 @@ export const useEditorStore = create<EditorState>()((set, get) => {
       const scene = get().scene;
       const original = scene?.objects.find((o) => o.id === id);
       if (!scene || !original || scene.objects.length >= MAX_OBJECTS) return null;
-      const [x, , z] = original.position;
+      const [x, y, z] = original.position;
       const copy: SceneObject = {
         ...original,
         id: crypto.randomUUID(),
-        position: [x + DUPLICATE_OFFSET, 0, z + DUPLICATE_OFFSET],
+        // Same height, so a copy of a wall shelf stays on the wall.
+        position: [x + DUPLICATE_OFFSET, y, z + DUPLICATE_OFFSET],
       };
       editObjects((objects) => [...objects, copy]);
       set({ selectedObjectId: copy.id, selectedWallId: null });

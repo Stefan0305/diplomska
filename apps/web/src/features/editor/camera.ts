@@ -36,7 +36,11 @@ export function sceneBounds(environment: Environment, objects: SceneObject[]): B
     include(...wall.end, wall.thickness / 2);
     max[1] = Math.max(max[1], wall.height);
   }
-  for (const object of objects) include(object.position[0], object.position[2], OBJECT_MARGIN);
+  for (const object of objects) {
+    include(object.position[0], object.position[2], OBJECT_MARGIN);
+    // Raised objects (e.g. on a wall) count with a fixed margin above their base.
+    max[1] = Math.max(max[1], object.position[1] + OBJECT_MARGIN);
+  }
   return { min, max };
 }
 

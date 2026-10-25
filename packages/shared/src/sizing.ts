@@ -1,4 +1,9 @@
-import { OBJECT_SCALE_MAX, OBJECT_SCALE_MIN } from './scene';
+import {
+  OBJECT_ELEVATION_MAX,
+  OBJECT_ELEVATION_MIN,
+  OBJECT_SCALE_MAX,
+  OBJECT_SCALE_MIN,
+} from './scene';
 
 /**
  * Real-world sizing and transform helpers (pure, unit tested).
@@ -19,6 +24,11 @@ export type SizeAxis = 0 | 1 | 2;
 
 export function clampScale(scale: number): number {
   return Math.min(OBJECT_SCALE_MAX, Math.max(OBJECT_SCALE_MIN, scale));
+}
+
+/** Keep an object's base between the floor and the elevation limit. */
+export function clampElevation(y: number): number {
+  return Math.min(OBJECT_ELEVATION_MAX, Math.max(OBJECT_ELEVATION_MIN, y));
 }
 
 /** The object's current real-world size in metres. */

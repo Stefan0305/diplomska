@@ -1,5 +1,7 @@
 import {
+  clampElevation,
   normalizeAngle,
+  OBJECT_ELEVATION_MAX,
   scaledSize,
   scaleForTargetSize,
   toDegrees,
@@ -8,7 +10,7 @@ import {
   type SceneObject,
   type SizeAxis,
 } from '@app/shared';
-import { Copy, Maximize2, Trash2, X } from 'lucide-react';
+import { ArrowDownToLine, Copy, Maximize2, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { NumberField } from '@/components/NumberField';
 import { Button } from '@/components/ui/button';
@@ -43,7 +45,7 @@ export function ObjectPanel({ object, model }: ObjectPanelProps) {
   const clearSelection = useEditorStore((s) => s.clearSelection);
   const nativeSize = useModelSizeStore((s) => s.sizes[object.modelId]);
 
-  const [x, , z] = object.position;
+  const [x, y, z] = object.position;
   const realSize = nativeSize ? scaledSize(nativeSize, object.scale) : null;
   const Icon = model ? categoryInfo[model.category].icon : null;
 
@@ -88,25 +90,47 @@ export function ObjectPanel({ object, model }: ObjectPanelProps) {
 
       <div className="flex flex-col gap-2">
         <SectionTitle>Position</SectionTitle>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <NumberField
             id="object-x"
             label="X"
             unit="m"
             value={x}
-            onCommit={(value) => updateObject(object.id, { position: [value, 0, z] })}
+            onCommit={(value) => updateObject(object.id, { position: [value, y, z] })}
+          />
+          <NumberField
+            id="object-y"
+            label="Height (Y)"
+            unit="m"
+            value={y}
+            onCommit={(value) => {
+              if (clampElevation(value) !== value) {
+                toast.info(`Height is kept between 0 m (the floor) and ${OBJECT_ELEVATION_MAX} m`);
+              }
+              updateObject(object.id, { position: [x, value, z] });
+            }}
           />
           <NumberField
             id="object-z"
             label="Z"
             unit="m"
             value={z}
-            onCommit={(value) => updateObject(object.id, { position: [x, 0, value] })}
+            onCommit={(value) => updateObject(object.id, { position: [x, y, value] })}
           />
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Objects always stand on the floor (Y = 0).
+          Height lifts the object&apos;s base off the floor, e.g. for shelves or pictures on a wall.
+          Drag the green gizmo arrow to do the same.
         </p>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={y === 0}
+          onClick={() => updateObject(object.id, { position: [x, 0, z] })}
+        >
+          <ArrowDownToLine />
+          Put on the floor
+        </Button>
       </div>
 
       <div className="flex flex-col gap-2">

@@ -1,4 +1,4 @@
-import { toRadians, type ModelInfo, type SceneObject } from '@app/shared';
+import { clampElevation, toRadians, type ModelInfo, type SceneObject } from '@app/shared';
 import { TransformControls } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
 import {
@@ -120,10 +120,13 @@ function PlacedObject({ object, model, selected, onSelect }: PlacedObjectProps) 
     if (!node) return;
     // Yaw from the quaternion ("YXZ" order) is stable past ±90°, unlike rotation.y.
     const yaw = yawEuler.setFromQuaternion(node.quaternion, 'YXZ').y;
-    // Undo anything the gizmo may add beyond the allowed transform (tilt, height).
+    // Undo anything the gizmo may add beyond the allowed transform (tilt, going below the floor).
     node.rotation.set(0, yaw, 0);
-    node.position.y = 0;
-    updateObject(object.id, { position: [node.position.x, 0, node.position.z], rotationY: yaw });
+    node.position.y = clampElevation(node.position.y);
+    updateObject(object.id, {
+      position: [node.position.x, node.position.y, node.position.z],
+      rotationY: yaw,
+    });
   }
 
   return (
@@ -158,8 +161,7 @@ function PlacedObject({ object, model, selected, onSelect }: PlacedObjectProps) 
         <TransformControls
           object={group as RefObject<Object3D>}
           mode={transformMode}
-          // Move along the floor only; rotate around the vertical axis only.
-          showY={transformMode === 'rotate'}
+          // Move along all three axes (Y lifts it, e.g. onto a wall); rotate around Y only.
           showX={transformMode === 'translate'}
           showZ={transformMode === 'translate'}
           translationSnap={snapEnabled ? SNAP_TRANSLATE : null}

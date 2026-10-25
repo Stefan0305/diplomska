@@ -10,8 +10,6 @@ export const SCENE_VERSION = 1;
 const finite = z.number().finite();
 /** [x, z] on the floor plane. */
 const point2 = z.tuple([finite, finite]);
-/** [x, y, z] in world space. */
-const point3 = z.tuple([finite, finite, finite]);
 
 export const environmentTypes = ['interior', 'exterior'] as const;
 export const floorMaterials = ['parquet', 'tiles', 'concrete', 'grass', 'soil', 'gravel'] as const;
@@ -42,11 +40,22 @@ export const environmentSchema = z.object({
 /** Uniform scale limits: 1/1000 to 1000 times the model's native size. */
 export const OBJECT_SCALE_MIN = 0.001;
 export const OBJECT_SCALE_MAX = 1000;
+/**
+ * Height of an object's base above the floor, in metres: 0 stands on the floor; higher values
+ * lift it, e.g. a shelf or picture on a wall, or a lamp on a table. Capped at the wall limit.
+ */
+export const OBJECT_ELEVATION_MIN = 0;
+export const OBJECT_ELEVATION_MAX = WALL_HEIGHT_MAX;
 
 export const sceneObjectSchema = z.object({
   id: z.string().min(1),
   modelId: z.string().min(1),
-  position: point3,
+  /** [x, y, z] in world space; y is the elevation of the object's base. */
+  position: z.tuple([
+    finite,
+    z.number().min(OBJECT_ELEVATION_MIN).max(OBJECT_ELEVATION_MAX),
+    finite,
+  ]),
   /** Rotation around the vertical axis only, in radians. */
   rotationY: finite,
   /** Uniform scale factor (proportions are always kept). */
